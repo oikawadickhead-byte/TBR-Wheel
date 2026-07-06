@@ -360,6 +360,7 @@
 
     .btn-accept { background-color: var(--primary-color); }
     .btn-move { background-color: var(--accent-yellow); color: #5c572b; }
+    .btn-track { background-color: var(--edit-color); color: #3b4052; }
     .btn-close { background-color: #eae5db; color: var(--text-color); }
 
     .action-bar { display: flex; justify-content: flex-end; align-items: center; gap: 10px; width: 100%; margin-bottom: 10px; }
@@ -653,6 +654,7 @@
             <div class="modal-buttons">
                 <button class="btn-accept" onclick="acceptBook()">Accept & Remove</button>
                 <button class="btn-move" id="btn-move-current" onclick="moveToCurrent()" style="display:none;">Move to Current</button>
+                <button class="btn-track" id="btn-track-spin" onclick="trackSpin()" style="display:none;">Track Spin</button>
                 <button class="btn-close" onclick="closeModal()">Close Window</button>
             </div>
         </div>
@@ -738,7 +740,8 @@
         let selectedBookIndexInGlobal = -1;
         let selectedBookGlobalListKey = '';
         let currentRotation = 0;
-        let smallWheelRotation = 0; // Added for small wheel
+        let smallWheelRotation = 0; 
+        let currentSpins = 0; // Tracks remaining small wheel spins
         let currentSelectedFormTags = [];
         let currentFilterTags = [];
         let currentMode = 'books';
@@ -795,7 +798,7 @@
         }
 
         function setViewMode(mode, persist = true) {
-            document.body.classList.toggle('view-mobile', mode === 'mobile');
+            document.body.classList.toggle('view-mobile', mode === 'desktop' ? false : true);
             document.getElementById('view-btn-desktop').classList.toggle('active', mode === 'desktop');
             document.getElementById('view-btn-mobile').classList.toggle('active', mode === 'mobile');
             if (persist) localStorage.setItem(VIEW_MODE_KEY, mode);
@@ -984,23 +987,23 @@
             let result = 1;
 
             if (energy === 'Tired') { 
-                if (rand < 25) result = 1;         // 1-2 (50%) -> 1 (25%)
-                else if (rand < 50) result = 2;    // 1-2 (50%) -> 2 (25%)
-                else if (rand < 65) result = 3;    // 3-4 (30%) -> 3 (15%)
-                else if (rand < 80) result = 4;    // 3-4 (30%) -> 4 (15%)
-                else result = 5;                   // 5 (20%)
+                if (rand < 25) result = 1;         
+                else if (rand < 50) result = 2;    
+                else if (rand < 65) result = 3;    
+                else if (rand < 80) result = 4;    
+                else result = 5;                   
             } else if (energy === 'Normal') { 
-                if (rand < 10) result = 1;         // 1-2 (20%) -> 1 (10%)
-                else if (rand < 20) result = 2;    // 1-2 (20%) -> 2 (10%)
-                else if (rand < 45) result = 3;    // 3-4 (50%) -> 3 (25%)
-                else if (rand < 70) result = 4;    // 3-4 (50%) -> 4 (25%)
-                else result = 5;                   // 5 (30%)
+                if (rand < 10) result = 1;         
+                else if (rand < 20) result = 2;    
+                else if (rand < 45) result = 3;    
+                else if (rand < 70) result = 4;    
+                else result = 5;                   
             } else { // Energized
-                if (rand < 5) result = 1;          // 1-2 (10%) -> 1 (5%)
-                else if (rand < 10) result = 2;    // 1-2 (10%) -> 2 (5%)
-                else if (rand < 50) result = 3;    // 3 (40%)
-                else if (rand < 75) result = 4;    // 4-5 (50%) -> 4 (25%)
-                else result = 5;                   // 4-5 (50%) -> 5 (25%)
+                if (rand < 5) result = 1;          
+                else if (rand < 10) result = 2;    
+                else if (rand < 50) result = 3;    
+                else if (rand < 75) result = 4;    
+                else result = 5;                   
             }
 
             const targetIndex = result - 1; 
@@ -1016,42 +1019,43 @@
             document.getElementById('done-btn').style.display = 'none';
 
             setTimeout(() => {
-                document.getElementById('small-wheel-result').innerText = `You rolled: ${result} spins!`;
+                currentSpins = result;
+                document.getElementById('small-wheel-result').innerText = `You rolled: ${currentSpins} spins!`;
                 document.getElementById('done-btn').style.display = 'inline-block';
             }, 1500);
         }
 
         function completeSmallWheel() {
+            currentSpins = 0; // Reset
             document.getElementById('small-wheel-result').innerText = '';
             document.getElementById('done-btn').style.display = 'none';
             fireConfetti();
             
-const msgs = [
-    "Woohoo!", 
-    "We crushed that!", 
-    "Fantastic reading!", 
-    "Way to go!",
-    "Excellent focus!",
-    "Great job :D",
-    "Mission accomplished!",
-    "Stellar progress!",
-    "Boom! Nicely done.",
-    "Awesome job!",
-    "That's one more down!",
-    "Nicely done.",
-    "🐈🐈🐈🐈🐈🐈🐈🐈‍",
-    "Good effort :)",
-    "Another one crossed off the list!",
-    "Great progress!",
-    "Fantastic run!",
-    "Nailed it!",
-    "Superb session!",
-    "That's how it's done. 💪",
-    "Solid progress, keep going. A"
-];
+            const msgs = [
+                "Woohoo!", 
+                "We crushed that!", 
+                "Fantastic reading!", 
+                "Way to go!",
+                "Excellent focus!",
+                "Great job :D",
+                "Mission accomplished!",
+                "Stellar progress!",
+                "Boom! Nicely done.",
+                "Awesome job!",
+                "That's one more down!",
+                "Nicely done.",
+                "🐈🐈🐈🐈🐈🐈🐈🐈‍",
+                "Good effort :)",
+                "Another one crossed off the list!",
+                "Great progress!",
+                "Fantastic run!",
+                "Nailed it!",
+                "Superb session!",
+                "That's how it's done. 💪",
+                "Solid progress, keep going. A"
+            ];
             const msg = msgs[Math.floor(Math.random() * msgs.length)];
             
-            // Create a small, temporary positive message toast
             const toast = document.createElement('div');
             toast.innerText = msg;
             toast.style.position = 'fixed';
@@ -1074,6 +1078,18 @@ const msgs = [
                 toast.style.opacity = '0';
                 setTimeout(() => toast.remove(), 300);
             }, 3000);
+        }
+
+        function trackSpin() {
+            if (currentSpins > 0) {
+                currentSpins--;
+                if (currentSpins === 0) {
+                    completeSmallWheel();
+                } else {
+                    document.getElementById('small-wheel-result').innerText = `Spins remaining: ${currentSpins}`;
+                }
+            }
+            closeModal();
         }
 
         function fireConfetti() {
@@ -1385,7 +1401,6 @@ const msgs = [
             let wheelSourceList = getActiveList();
             
             if (currentMode === 'games' && combineGamesChecked) {
-                // Ensure temporary source properties tag items distinctly so metadata handles correctly during spins
                 const annotatedNew = gameList.map(item => ({ ...item, _originListKey: 'new_games' }));
                 const annotatedReading = playingGamesList.map(item => ({ ...item, _originListKey: 'reading_games' }));
                 wheelSourceList = [...annotatedNew, ...annotatedReading];
@@ -1400,7 +1415,6 @@ const msgs = [
                     if (!hasAny) return false;
                 }
                 
-                // Length filters context checks item details accurately
                 const originIsReading = item._originListKey.startsWith('reading');
                 if (!originIsReading && currentMode === 'books' && pageCond !== 'any' && !isNaN(pageVal)) {
                     if (pageCond === 'under' && item.pages > pageVal) return false;
@@ -1440,7 +1454,6 @@ const msgs = [
             const isGames = currentMode === 'games';
             const showExtraCol = !(isReading && (isBooks || isGames));
 
-            // UI Table display explicitly renders only items contained within the currently active category view list layout
             const activeFilteredList = filteredList.filter(item => item._originListKey === getListKey());
 
             activeFilteredList.forEach((item) => {
@@ -1520,7 +1533,6 @@ const msgs = [
             if (filteredList.length === 0) return;
             const targetFilteredIndex = Math.floor(Math.random() * filteredList.length);
             const sliceAngle = 360 / filteredList.length;
-            // Random offset within the segment for more dynamic results
             const randomOffset = (Math.random() - 0.5) * sliceAngle;
             const stopAngle = (targetFilteredIndex * sliceAngle) + (sliceAngle / 2) + randomOffset;
             currentRotation += (360 * 5) + (270 - stopAngle) - (currentRotation % 360);
@@ -1601,6 +1613,14 @@ const msgs = [
                 else if (currentMode === 'games') moveBtn.innerText = 'Move to Playing Now';
             } else {
                 moveBtn.style.display = 'none';
+            }
+
+            const trackBtn = document.getElementById('btn-track-spin');
+            if (currentSpins > 0) {
+                trackBtn.style.display = 'inline-block';
+                trackBtn.innerText = `Track Spin (${currentSpins} left)`;
+            } else {
+                trackBtn.style.display = 'none';
             }
 
             document.getElementById('banner-modal').classList.add('active');
