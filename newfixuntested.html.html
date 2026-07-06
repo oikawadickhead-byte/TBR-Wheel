@@ -1,0 +1,1745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What to read/watch/play next?</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/n3Skh7r.png">
+    <link rel="apple-touch-icon" href="https://i.imgur.com/n3Skh7r.png">
+<style>
+    :root {
+        --surface-color: rgba(255, 255, 255, 0.85);
+        --primary-color: #cbdba8;
+        --accent-yellow: #fff9a6;
+        --text-color: #333333;
+        --text-muted: #666666;
+        --border-color: #e0dcd3;
+        --danger-color: #ffb3ba;
+        --edit-color: #c7ceea;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-image: url('https://images.pexels.com/photos/37127518/pexels-photo-37127518.jpeg');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        color: var(--text-color);
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        transition: background-image 0.3s ease;
+    }
+
+    body.mode-movies { background-image: url('https://i.imgur.com/Pslxunf.png'); }
+    body.mode-games { background-image: url('https://i.imgur.com/B058arJ.png'); }
+
+    h1 { color: #ffffff; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); margin-bottom: 20px; }
+
+    .container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 40px;
+        max-width: 1200px;
+        width: 100%;
+        justify-content: center;
+        margin-top: 20px;
+    }
+
+    .wheel-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: var(--surface-color);
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        position: relative;
+        align-self: flex-start;
+        border: 1px solid var(--border-color);
+    }
+
+    canvas {
+        border-radius: 50%;
+        border: 6px solid #ffffff;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+    }
+
+    .pointer {
+        position: absolute;
+        top: 22px;
+        width: 0;
+        height: 0;
+        border-left: 15px solid transparent;
+        border-right: 15px solid transparent;
+        border-top: 30px solid #cbdba8;
+        z-index: 10;
+    }
+
+    button {
+        background-color: var(--primary-color);
+        color: #444e37;
+        border: none;
+        padding: 12px 24px;
+        font-size: 16px;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-top: 20px;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    button:hover { opacity: 0.9; transform: scale(1.02); }
+
+    .secondary-btn {
+        background-color: rgba(255, 255, 255, 0.9);
+        color: var(--text-color);
+        border: 1px solid var(--border-color);
+        padding: 8px 16px;
+        font-size: 14px;
+        margin-left: 10px;
+    }
+
+    .filter-section {
+        background-color: var(--surface-color);
+        padding: 24px;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 1140px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+        box-sizing: border-box;
+        border: 1px solid var(--border-color);
+    }
+
+    .filter-group { display: flex; flex-direction: column; gap: 8px; position: relative; }
+    .filter-group label {
+        font-size: 12px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: bold;
+    }
+
+    .dropdown-container { position: relative; width: 100%; }
+    .dropdown-select {
+        background-color: #fcfcf9;
+        border: 1px solid var(--border-color);
+        padding: 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--text-color);
+        font-size: 14px;
+        height: 42px;
+        box-sizing: border-box;
+    }
+
+    .dropdown-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        display: none;
+        z-index: 100;
+        max-height: 200px;
+        overflow-y: auto;
+        padding: 10px;
+    }
+
+    .dropdown-menu.show { display: block; }
+
+    .dropdown-item { padding: 8px 0; display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer; }
+    .dropdown-item:hover { background: #fdfdfb; }
+
+    select, input[type="number"], input[type="text"] {
+        background-color: #fcfcf9;
+        color: var(--text-color);
+        border: 1px solid var(--border-color);
+        padding: 10px;
+        border-radius: 6px;
+        width: 100%;
+        box-sizing: border-box;
+        height: 42px;
+    }
+
+    .tbr-section {
+        background-color: var(--surface-color);
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        flex: 1;
+        min-width: 300px;
+        overflow-x: auto;
+        border: 1px solid var(--border-color);
+    }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border-color); }
+    th { color: #555e4b; font-weight: bold; }
+
+    .vibe-tag {
+        display: inline-block;
+        background-color: #f0ede4;
+        color: #555;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 9px;
+        margin: 2px;
+        border: 1px solid #e0dcd3;
+    }
+
+    .vibe-tag-clickable { cursor: pointer; transition: all 0.2s ease; }
+    .vibe-tag-clickable:hover { background-color: #cbdba8; color: #444e37; border-color: #b3c48f; }
+    .vibe-tag-active { background-color: #cbdba8 !important; color: #444e37 !important; border-color: #b3c48f !important; }
+
+    .form-tag-pool { margin-top: 6px; background: #fdfdfb; border: 1px dashed var(--border-color); padding: 8px; border-radius: 6px; }
+    .form-tag-pool-label { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; display: block; }
+
+    .action-cell { display: flex; gap: 6px; }
+    .delete-btn { background-color: var(--danger-color); color: #5e3a3a; padding: 6px 12px; margin: 0; font-size: 12px; }
+    .edit-btn { background-color: var(--edit-color); color: #3b4052; padding: 6px 12px; margin: 0; font-size: 12px; }
+
+    .add-form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 20px;
+        background-color: #fcfcf9;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
+
+    .add-form-row.fields-row {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 8px;
+        width: 100%;
+        align-items: center;
+    }
+
+    .add-form-row.fields-row input, 
+    .add-form-row.fields-row select,
+    .add-form-row.fields-row div {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    .add-form input, .add-form select {
+        padding: 8px;
+        height: 38px;
+        box-sizing: border-box;
+    }
+
+    .add-form-row.tags-row {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .add-form-row.tags-row button {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .toggle-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--text-muted);
+        font-weight: bold;
+        padding: 4px 0;
+    }
+    .toggle-container input {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+    }
+
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(40, 38, 34, 0.6);
+        backdrop-filter: blur(4px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+
+    .modal-banner {
+        background: #ffffff;
+        border: 3px solid var(--primary-color);
+        padding: 40px;
+        border-radius: 20px;
+        text-align: center;
+        max-width: 550px;
+        width: 90%;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        transform: scale(0.8);
+        transition: transform 0.3s ease;
+    }
+    .modal-overlay.active .modal-banner { transform: scale(1); }
+
+    .edit-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(40, 38, 34, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1001;
+    }
+    .edit-modal-overlay.active { display: flex; }
+
+    .edit-modal-content {
+        background: #ffffff;
+        border: 2px solid var(--primary-color);
+        padding: 30px;
+        border-radius: 12px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+    .edit-modal-content h2 { color: #444e37; margin: 0 0 20px 0; font-size: 1.5em; }
+    .edit-modal-content .edit-form { display: flex; flex-direction: column; gap: 12px; }
+    .edit-modal-content .form-group-vibe { margin-top: 10px; }
+    .edit-modal-buttons { display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px; }
+    .edit-modal-buttons button { margin: 0; padding: 10px 20px; font-size: 14px; }
+
+    .btn-save { background-color: var(--primary-color); color: #444e37; }
+    .btn-cancel { background-color: #eae5db; color: var(--text-color); }
+
+    .modal-banner h2 { color: #444e37; font-size: 2.2em; margin: 0 0 10px 0; }
+    .modal-vibe { margin-bottom: 20px; }
+    .modal-stats {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        margin: 20px 0;
+        font-size: 1.2em;
+        border-top: 1px solid var(--border-color);
+        border-bottom: 1px solid var(--border-color);
+        padding: 15px 0;
+    }
+    .modal-buttons { display: flex; gap: 20px; justify-content: center; margin-top: 30px; }
+    .modal-buttons button { margin: 0; padding: 15px 30px; font-size: 18px; }
+
+    .btn-accept { background-color: var(--primary-color); }
+    .btn-move { background-color: var(--accent-yellow); color: #5c572b; }
+    .btn-close { background-color: #eae5db; color: var(--text-color); }
+
+    .action-bar { display: flex; justify-content: flex-end; align-items: center; gap: 10px; width: 100%; margin-bottom: 10px; }
+
+    .mode-toggle {
+        display: flex;
+        background-color: var(--surface-color);
+        border-radius: 10px;
+        padding: 4px;
+        border: 1px solid var(--border-color);
+        gap: 4px;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+    }
+    .mode-toggle button { margin: 0; padding: 10px 22px; font-size: 14px; background-color: transparent; color: var(--text-muted); box-shadow: none; }
+    .mode-toggle button.active { background-color: var(--primary-color); color: #444e37; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); }
+
+    .view-toggle {
+        position: fixed;
+        top: 12px;
+        left: 12px;
+        z-index: 2000;
+        display: flex;
+        background-color: var(--surface-color);
+        border-radius: 8px;
+        padding: 3px;
+        border: 1px solid var(--border-color);
+        gap: 2px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    .view-toggle button { margin: 0; padding: 6px 10px; font-size: 14px; line-height: 1; background-color: transparent; color: var(--text-muted); box-shadow: none; border-radius: 6px; }
+    .view-toggle button.active { background-color: var(--primary-color); color: #444e37; }
+
+    body.view-mobile { padding: 12px; padding-top: 56px; }
+    body.view-mobile h1 { font-size: 1.5em; margin-bottom: 14px; text-align: center; }
+    body.view-mobile .mode-toggle { width: 100%; box-sizing: border-box; margin-bottom: 12px; }
+    body.view-mobile .mode-toggle button { flex: 1; padding: 10px 6px; font-size: 13px; }
+    body.view-mobile .action-bar { justify-content: center; flex-wrap: wrap; gap: 8px; max-width: 100% !important; }
+    body.view-mobile .action-bar button { margin: 0; flex: 1 1 auto; font-size: 12px; padding: 10px 10px; }
+    body.view-mobile .filter-section { grid-template-columns: 1fr; padding: 16px; gap: 14px; max-width: 100%; }
+    body.view-mobile .container { gap: 16px; margin-top: 12px; }
+    body.view-mobile .wheel-section { padding: 16px; width: 100%; box-sizing: border-box; align-self: center; }
+    body.view-mobile canvas { max-width: 100%; height: auto; }
+    body.view-mobile .tbr-section { padding: 16px; width: 100%; box-sizing: border-box; min-width: unset; }
+    body.view-mobile .add-form-row.fields-row { flex-wrap: wrap; }
+    body.view-mobile .add-form-row.tags-row button { margin-left: 0; width: 100%; }
+    body.view-mobile #tbr-table thead { display: none; }
+    body.view-mobile #tbr-table, body.view-mobile #tbr-table tbody, body.view-mobile #tbr-table tr, body.view-mobile #tbr-table td { display: block; width: 100%; box-sizing: border-box; }
+    body.view-mobile #tbr-table tr { margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 12px; background: #fdfdfb; }
+    body.view-mobile #tbr-table td { border: none; padding: 6px 0; }
+    body.view-mobile #tbr-table td[data-label]::before {
+        content: attr(data-label);
+        font-weight: bold;
+        display: block;
+        font-size: 10px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 2px;
+    }
+    body.view-mobile #tbr-table td.action-cell-wrap { padding-top: 10px; }
+    body.view-mobile .action-cell { justify-content: flex-start; }
+    body.view-mobile .action-cell button { flex: 1; padding: 10px 8px; font-size: 13px; }
+    body.view-mobile .modal-banner { padding: 24px 20px; width: 92%; }
+    body.view-mobile .modal-banner h2 { font-size: 1.6em; }
+    body.view-mobile .modal-stats { gap: 16px; flex-wrap: wrap; font-size: 1em; }
+    body.view-mobile .modal-buttons { flex-direction: column; gap: 10px; }
+    body.view-mobile .modal-buttons button { width: 100%; box-sizing: border-box; padding: 14px; }
+</style>
+</head>
+<body>
+
+    <div class="view-toggle" id="view-toggle">
+        <button type="button" id="view-btn-desktop" onclick="setViewMode('desktop')" title="Desktop view">🖥️</button>
+        <button type="button" id="view-btn-mobile" onclick="setViewMode('mobile')" title="Mobile view">📱</button>
+    </div>
+
+    <h1>What to read/watch/play next?</h1>
+
+   <div class="mode-toggle" id="list-mode-toggle">
+        <button type="button" class="active" id="list-mode-btn-new" onclick="switchListMode('new')">✨ New Content</button>
+        <button type="button" id="list-mode-btn-reading" onclick="switchListMode('reading')">⏳ Current Content</button>
+    </div>
+
+    <div class="mode-toggle" id="mode-toggle">
+        <button type="button" class="active" id="mode-btn-books" onclick="switchMode('books')">📚 Books</button>
+        <button type="button" id="mode-btn-movies" onclick="switchMode('movies')">🎬 Movies/Series</button>
+        <button type="button" id="mode-btn-games" onclick="switchMode('games')">🎮 Video Games</button>
+    </div>
+
+    <div class="action-bar" style="max-width: 1140px; width:100%;">
+        <button class="secondary-btn" onclick="exportData()">Export Save</button>
+        <button class="secondary-btn" onclick="exportDataAsText()">Export Text</button>
+        <button class="secondary-btn" onclick="document.getElementById('import-file').click()">Import Data</button>
+        <input type="file" id="import-file" style="display:none" onchange="importData(event)">
+        <button id="undo-btn" class="secondary-btn" style="display: none;" onclick="triggerUndo()">↩ Undo</button>
+    </div>
+
+    <div class="filter-section">
+        <div class="filter-group" id="filter-group-vibe">
+            <label>Filter by Tagged Vibe</label>
+            <div class="dropdown-container">
+                <div class="dropdown-select" onclick="toggleDropdown()">Select Vibes...</div>
+                <div class="dropdown-menu" id="filter-dropdown-menu"></div>
+            </div>
+        </div>
+        <div class="filter-group" id="filter-group-pages">
+            <label>Page Length</label>
+            <select id="filter-pages-cond" onchange="updateFilters()">
+                <option value="any">Any Length</option>
+                <option value="under">Under (&le;)</option>
+                <option value="over">Over (&gt;)</option>
+            </select>
+            <input type="number" id="filter-pages-val" placeholder="Page count..." oninput="enforceMin(event); updateFilters()">
+        </div>
+        <div class="filter-group">
+            <label id="filter-rating-label">Goodreads Rating</label>
+            <select id="filter-rating-cond" onchange="updateFilters()">
+                <option value="any">Any Rating</option>
+                <option value="under">Under (&le;)</option>
+                <option value="over">Over (&gt;)</option>
+            </select>
+            <input type="number" id="filter-rating-val" placeholder="E.g. 4.0" step="0.1" min="0" oninput="enforceMin(event); updateFilters()">
+        </div>
+        <div class="filter-group" id="filter-group-type" style="display:none;">
+            <label>Type</label>
+            <select id="filter-type" onchange="onTypeFilterChange()">
+                <option value="any">Movies &amp; Series</option>
+                <option value="Movie">Movies Only</option>
+                <option value="Series">Series Only</option>
+            </select>
+        </div>
+        <div class="filter-group" id="filter-group-year" style="display:none;">
+            <label>Sort by Year</label>
+            <select id="filter-year-cond" onchange="updateFilters()">
+                <option value="any">Any Year</option>
+                <option value="under">Under (&le;)</option>
+                <option value="over">Over (&gt;)</option>
+            </select>
+            <input type="number" id="filter-year-val" placeholder="E.g. 2010" oninput="enforceMin(event); updateFilters()">
+        </div>
+        <div class="filter-group" id="filter-group-format" style="display:none;">
+            <label>Sort by Format</label>
+            <select id="filter-format" onchange="updateFilters()">
+                <option value="none">No Sorting</option>
+                <option value="Animated">Animated</option>
+                <option value="Live Action">Live Action</option>
+            </select>
+        </div>
+        <div class="filter-group" id="filter-group-genre" style="display:none;">
+            <label>Filter by Genre</label>
+            <select id="filter-genre" onchange="updateFilters()">
+                <option value="any">All Genres</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="wheel-section">
+            <div class="pointer"></div>
+            <canvas id="wheel" width="400" height="400"></canvas>
+            <button onclick="spinWheel()">SPIN THE WHEEL</button>
+            <div id="combine-games-toggle-container" class="toggle-container" style="display:none; margin-top: 15px;">
+                <input type="checkbox" id="combine-games-checkbox" onchange="updateFilters()">
+                <label for="combine-games-checkbox">Include both new &amp; current games on wheel</label>
+            </div>
+        </div>
+
+        <div class="tbr-section">
+            <h2 id="form-heading">Add New Book</h2>
+            <div class="add-form">
+                <input type="hidden" id="edit-index" value="-1">
+                
+                <div class="add-form-row fields-row">
+                    <input type="text" id="new-title" placeholder="Book Title" required>
+                    <input type="number" id="new-rating" placeholder="GR Rating" step="0.01" min="0" oninput="enforceMin(event)" required>
+                    
+                    <div id="new-pages-container">
+                        <input type="number" id="new-pages" placeholder="Pages" required oninput="enforceMin(event)">
+                    </div>
+                    <div id="new-type-container" style="display:none;">
+                        <select id="new-type" onchange="updateTypeFields()">
+                            <option value="Movie">Movie</option>
+                            <option value="Series">Series</option>
+                        </select>
+                    </div>
+                    <div id="new-year-container" style="display:none;">
+                        <input type="number" id="new-year" placeholder="Year" min="1800" max="2999" oninput="enforceMin(event)">
+                    </div>
+                    <div id="new-animation-container" style="display:none;">
+                        <select id="new-animation">
+                            <option value="Live Action">Live Action</option>
+                            <option value="Animated">Animated</option>
+                        </select>
+                    </div>
+                    <div id="new-time-stopped-container" style="display:none;">
+                        <input type="text" id="new-time-stopped" placeholder="Time Stopped (e.g. 1:23:45)">
+                    </div>
+                    <div id="new-length-container" style="display:none;">
+                        <input type="number" id="new-length" placeholder="Game Length (hours)" step="0.1" oninput="enforceMin(event)">
+                    </div>
+                    <div id="new-genre-container" style="display:none;">
+                        <input type="text" id="new-genre-input" list="genre-suggestions" placeholder="Type a genre..." oninput="handleGenreDatalistSelection(event, 'new')" onkeydown="handleGenreInputKeydown(event, 'new')">
+                        <input type="hidden" id="new-genre" value="">
+                    </div>
+                </div>
+
+                <datalist id="genre-suggestions"></datalist>
+                
+                <div id="new-genre-chips-wrapper" class="add-form-row tags-row" style="display:none; margin-top: -5px; margin-bottom: 5px;">
+                    <div class="form-tag-pool">
+                        <span class="form-tag-pool-label">Genres Added:</span>
+                        <div id="new-genre-chips"></div>
+                    </div>
+                </div>
+
+                <div class="form-group-vibe" id="new-vibe-group">
+                    <input type="hidden" id="new-vibe" value="">
+                    <div class="form-tag-pool">
+                        <span class="form-tag-pool-label">Select Tags (Toggle on/off):</span>
+                        <div id="form-tag-pool-container"></div>
+                    </div>
+                </div>
+
+                <div class="add-form-row tags-row">
+                    <button id="submit-btn" onclick="handleSubmit()">Add to TBR</button>
+                </div>
+            </div>
+
+            <table id="tbr-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th id="table-vibe-label">Vibes / Themes</th>
+                        <th id="table-genre-mid-label" style="display:none;">Genre</th>
+                        <th id="table-rating-label">GR Rating</th>
+                        <th id="table-extra-label">Pages</th>
+                        <th id="table-genre-end-label" style="display:none;">Genre</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="tbr-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="banner-modal">
+        <div class="modal-banner">
+            <p style="text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin: 0; font-size: 12px;">The Wheel Has Spoken</p>
+            <h2 id="modal-title">Book Title</h2>
+            <div class="modal-vibe" id="modal-vibe"></div>
+            <div class="modal-stats">
+                <div id="modal-pages-stat">📚 <span id="modal-pages">0</span> pages</div>
+                <div id="modal-type-stat" style="display:none;"><span id="modal-type-emoji">📅</span> <span id="modal-type">Movie</span></div>
+                <div>⭐ <span id="modal-rating">0.00</span></div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-accept" onclick="acceptBook()">Accept & Remove</button>
+                <button class="btn-move" id="btn-move-current" onclick="moveToCurrent()" style="display:none;">Move to Current</button>
+                <button class="btn-close" onclick="closeModal()">Close Window</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="edit-modal-overlay" id="edit-modal-overlay">
+        <div class="edit-modal-content">
+            <h2>Edit Entry</h2>
+            <div class="edit-form">
+                <input type="hidden" id="edit-modal-index" value="-1">
+                <input type="text" id="edit-modal-title" placeholder="Title" required>
+                <input type="number" id="edit-modal-rating" placeholder="Rating" step="0.01" min="0" oninput="enforceMin(event)" required>
+                <div id="edit-modal-pages-container">
+                    <input type="number" id="edit-modal-pages" placeholder="Pages" required oninput="enforceMin(event)">
+                </div>
+                <div id="edit-modal-type-container" style="display:none;">
+                    <select id="edit-modal-type" onchange="updateEditTypeFields()">
+                        <option value="Movie">Movie</option>
+                        <option value="Series">Series</option>
+                    </select>
+                </div>
+                <div id="edit-modal-year-container" style="display:none;">
+                    <input type="number" id="edit-modal-year" placeholder="Year" min="1800" max="2999" oninput="enforceMin(event)">
+                </div>
+                <div id="edit-modal-animation-container" style="display:none;">
+                    <select id="edit-modal-animation">
+                        <option value="Live Action">Live Action</option>
+                        <option value="Animated">Animated</option>
+                    </select>
+                </div>
+                <div id="edit-modal-time-stopped-container" style="display:none;">
+                    <input type="text" id="edit-modal-time-stopped" placeholder="Time Stopped (e.g. 1:23:45)">
+                </div>
+                <div id="edit-modal-genre-container" style="display:none;">
+                    <input type="text" id="edit-modal-genre-input" list="genre-suggestions" placeholder="Type a genre..." oninput="handleGenreDatalistSelection(event, 'edit')" onkeydown="handleGenreInputKeydown(event, 'edit')">
+                    <input type="hidden" id="edit-modal-genre" value="">
+                    <div class="form-tag-pool" style="margin-top:6px;">
+                        <span class="form-tag-pool-label">Genres Added:</span>
+                        <div id="edit-modal-genre-chips"></div>
+                    </div>
+                </div>
+                <div id="edit-modal-length-container" style="display:none;">
+                    <input type="number" id="edit-modal-length" placeholder="Game Length (hours)" step="0.1" oninput="enforceMin(event)">
+                </div>
+                <div class="form-group-vibe" id="edit-vibe-group">
+                    <input type="hidden" id="edit-modal-vibe" value="">
+                    <div class="form-tag-pool">
+                        <span class="form-tag-pool-label">Select Tags (Toggle on/off):</span>
+                        <div id="edit-modal-tag-pool-container"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="edit-modal-buttons">
+                <button class="btn-cancel" onclick="closeEditModal()">Cancel</button>
+                <button class="btn-save" onclick="saveEdit()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function enforceMin(e) {
+            let val = e.target.value;
+            if (val < 0) {
+                e.target.value = 0;
+                return;
+            }
+            if (val.length > 1 && val.startsWith('0') && val[1] !== '.') {
+                e.target.value = val.substring(1);
+            }
+        }
+
+        const masterTags = ["Surrealist", "Heavy", "Comedy", "Dystopian", "Contemporary", "Character-Driven", "Thrilling", "Trashy", "Mindfuck"];
+        let tbrList = [];
+        let movieList = [];
+        let gameList = [];
+        let readingBooksList = [];
+        let readingMoviesList = [];
+        let playingGamesList = [];
+        let filteredList = [];
+        let lastRemovedBook = null;
+        let lastRemovedIndex = -1;
+        let lastRemovedFromListKey = '';
+        let selectedBookIndexInGlobal = -1;
+        let selectedBookGlobalListKey = '';
+        let currentRotation = 0;
+        let currentSelectedFormTags = [];
+        let currentFilterTags = [];
+        let currentMode = 'books';
+        let currentListMode = 'new';
+        let editModalSelectedTags = [];
+        let editingItemIndex = -1;
+        let currentSelectedFormGenres = [];
+        let editModalSelectedGenres = [];
+
+        const modeConfig = {
+            books: { ratingLabel: 'GR Rating', titlePlaceholder: 'Book Title' },
+            movies: { ratingLabel: 'IMDB Rating', titlePlaceholder: 'Movie/Series Title' },
+            games: { ratingLabel: 'Steam Rating', titlePlaceholder: 'Game Title' }
+        };
+
+        const storageKeys = {
+            new_books: 'tbr_roulette_saved_data',
+            new_movies: 'movie_roulette_saved_data',
+            new_games: 'game_roulette_saved_data',
+            reading_books: 'reading_books_saved_data',
+            reading_movies: 'reading_movies_saved_data',
+            reading_games: 'playing_games_saved_data'
+        };
+
+        function getListKey() { return `${currentListMode}_${currentMode}`; }
+
+        function getActiveList() {
+            switch (getListKey()) {
+                case 'new_books': return tbrList;
+                case 'new_movies': return movieList;
+                case 'new_games': return gameList;
+                case 'reading_books': return readingBooksList;
+                case 'reading_movies': return readingMoviesList;
+                case 'reading_games': return playingGamesList;
+            }
+        }
+        function setActiveList(newList) {
+            switch (getListKey()) {
+                case 'new_books': tbrList = newList; break;
+                case 'new_movies': movieList = newList; break;
+                case 'new_games': gameList = newList; break;
+                case 'reading_books': readingBooksList = newList; break;
+                case 'reading_movies': readingMoviesList = newList; break;
+                case 'reading_games': playingGamesList = newList; break;
+            }
+        }
+
+        const VIEW_MODE_KEY = 'tbr_view_mode_preference';
+
+        function initViewMode() {
+            const saved = localStorage.getItem(VIEW_MODE_KEY);
+            const mode = saved || 'desktop';
+            setViewMode(mode, Boolean(saved));
+        }
+
+        function setViewMode(mode, persist = true) {
+            document.body.classList.toggle('view-mobile', mode === 'mobile');
+            document.getElementById('view-btn-desktop').classList.toggle('active', mode === 'desktop');
+            document.getElementById('view-btn-mobile').classList.toggle('active', mode === 'mobile');
+            if (persist) localStorage.setItem(VIEW_MODE_KEY, mode);
+        }
+
+        function init() {
+            initViewMode();
+            const storedBooks = localStorage.getItem(storageKeys.new_books);
+            if (storedBooks) tbrList = JSON.parse(storedBooks);
+            const storedMovies = localStorage.getItem(storageKeys.new_movies);
+            if (storedMovies) movieList = JSON.parse(storedMovies);
+            const storedGames = localStorage.getItem(storageKeys.new_games);
+            if (storedGames) gameList = JSON.parse(storedGames);
+
+            const storedReadingBooks = localStorage.getItem(storageKeys.reading_books);
+            if (storedReadingBooks) readingBooksList = JSON.parse(storedReadingBooks);
+            const storedReadingMovies = localStorage.getItem(storageKeys.reading_movies);
+            if (storedReadingMovies) readingMoviesList = JSON.parse(storedReadingMovies);
+            const storedPlayingGames = localStorage.getItem(storageKeys.reading_games);
+            if (storedPlayingGames) playingGamesList = JSON.parse(storedPlayingGames);
+
+            // Restore last page
+            const lastMode = localStorage.getItem('lastMode');
+            if (lastMode && ['books', 'movies', 'games'].includes(lastMode)) {
+                currentMode = lastMode;
+            }
+            const lastListMode = localStorage.getItem('lastListMode');
+            if (lastListMode && ['new', 'reading'].includes(lastListMode)) {
+                currentListMode = lastListMode;
+            }
+
+            buildFilterDropdown();
+            buildFormTagPool();
+            populateGenreSuggestions();
+            populateGenreFilterDropdown();
+            updateFilters();
+            applyModeUI();
+        }
+
+        function switchMode(mode) {
+            if (mode === currentMode) return;
+            currentMode = mode;
+            localStorage.setItem('lastMode', mode);
+            applyModeUI();
+        }
+
+        function switchListMode(mode) {
+            if (mode === currentListMode) return;
+            currentListMode = mode;
+            localStorage.setItem('lastListMode', mode);
+            applyModeUI();
+        }
+
+        function applyModeUI() {
+            const isBooks = currentMode === 'books';
+            const isMovies = currentMode === 'movies';
+            const isGames = currentMode === 'games';
+            const isReading = currentListMode === 'reading';
+            const isNew = !isReading;
+
+            document.body.classList.toggle('mode-movies', isMovies);
+            document.body.classList.toggle('mode-games', isGames);
+
+            document.getElementById('mode-btn-books').classList.toggle('active', isBooks);
+            document.getElementById('mode-btn-movies').classList.toggle('active', isMovies);
+            document.getElementById('mode-btn-games').classList.toggle('active', isGames);
+
+            document.getElementById('list-mode-btn-new').classList.toggle('active', isNew);
+            document.getElementById('list-mode-btn-reading').classList.toggle('active', isReading);
+
+            document.getElementById('filter-group-pages').style.display = (isNew && isBooks) ? 'flex' : 'none';
+            document.getElementById('filter-group-type').style.display = isMovies ? 'flex' : 'none';
+            document.getElementById('filter-group-genre').style.display = isGames ? 'flex' : 'none';
+            document.getElementById('filter-group-vibe').style.display = isGames ? 'none' : 'flex';
+            document.getElementById('table-vibe-label').style.display = isGames ? 'none' : '';
+            document.getElementById('new-vibe-group').style.display = isGames ? 'none' : 'flex';
+            document.getElementById('combine-games-toggle-container').style.display = isGames ? 'flex' : 'none';
+
+            const ratingLabel = isReading ? 'Rating' : modeConfig[currentMode].ratingLabel;
+            document.getElementById('filter-rating-label').innerText = ratingLabel;
+            document.getElementById('table-rating-label').innerText = ratingLabel;
+
+            const extraTh = document.getElementById('table-extra-label');
+            const genreMidTh = document.getElementById('table-genre-mid-label');
+            const genreEndTh = document.getElementById('table-genre-end-label');
+            genreMidTh.style.display = (isReading && isGames) ? '' : 'none';
+            genreEndTh.style.display = (isNew && isGames) ? '' : 'none';
+            const showExtraCol = !(isReading && (isBooks || isGames));
+            if (!showExtraCol) {
+                extraTh.style.display = 'none';
+            } else {
+                extraTh.style.display = '';
+                if (isNew) {
+                    if (isBooks) extraTh.innerText = 'Pages';
+                    else if (isMovies) extraTh.innerText = 'Year / Format';
+                    else if (isGames) extraTh.innerText = 'Length';
+                } else {
+                    extraTh.innerText = 'Format / Time';
+                }
+            }
+
+            const headingMap = {
+                books: isNew ? 'Add New Book' : 'Add Book',
+                movies: isNew ? 'Add New Movie/Series' : 'Add Movie/Series',
+                games: isNew ? 'Add New Videogame' : 'Add Videogame'
+            };
+            document.getElementById('form-heading').innerText = headingMap[currentMode];
+
+            document.getElementById('new-rating').placeholder = ratingLabel;
+            document.getElementById('new-title').placeholder = modeConfig[currentMode].titlePlaceholder;
+
+            document.getElementById('new-pages-container').style.display = (isNew && isBooks) ? 'block' : 'none';
+            document.getElementById('new-type-container').style.display = isMovies ? 'block' : 'none';
+            document.getElementById('new-genre-container').style.display = isGames ? 'block' : 'none';
+            document.getElementById('new-genre-chips-wrapper').style.display = isGames ? 'block' : 'none';
+            document.getElementById('new-length-container').style.display = (isNew && isGames) ? 'block' : 'none';
+
+            document.getElementById('new-pages').required = (isNew && isBooks);
+            document.getElementById('new-genre').required = isGames;
+            document.getElementById('new-length').required = (isNew && isGames);
+
+            document.getElementById('filter-pages-cond').value = 'any';
+            document.getElementById('filter-pages-val').value = '';
+            document.getElementById('filter-type').value = 'any';
+            document.getElementById('filter-genre').value = 'any';
+            populateGenreSuggestions();
+            populateGenreFilterDropdown();
+            updateSortOptions();
+
+            lastRemovedBook = null;
+            lastRemovedIndex = -1;
+            lastRemovedFromListKey = '';
+            document.getElementById('undo-btn').style.display = 'none';
+
+            currentFilterTags = [];
+            resetForm();
+            buildFilterDropdown();
+            updateFilters();
+        }
+
+        function exportData() {
+            const combined = {
+                books: tbrList,
+                movies: movieList,
+                games: gameList,
+                readingBooks: readingBooksList,
+                readingMovies: readingMoviesList,
+                playingGames: playingGamesList
+            };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(combined));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "roulette_save.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        function saveAllToStorage() {
+            localStorage.setItem(storageKeys.new_books, JSON.stringify(tbrList));
+            localStorage.setItem(storageKeys.new_movies, JSON.stringify(movieList));
+            localStorage.setItem(storageKeys.new_games, JSON.stringify(gameList));
+            localStorage.setItem(storageKeys.reading_books, JSON.stringify(readingBooksList));
+            localStorage.setItem(storageKeys.reading_movies, JSON.stringify(readingMoviesList));
+            localStorage.setItem(storageKeys.reading_games, JSON.stringify(playingGamesList));
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    const keys = ['books', 'movies', 'games', 'readingBooks', 'readingMovies', 'playingGames'];
+                    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && keys.some(k => k in parsed)) {
+                        tbrList = Array.isArray(parsed.books) ? parsed.books : [];
+                        movieList = Array.isArray(parsed.movies) ? parsed.movies : [];
+                        gameList = Array.isArray(parsed.games) ? parsed.games : [];
+                        readingBooksList = Array.isArray(parsed.readingBooks) ? parsed.readingBooks : [];
+                        readingMoviesList = Array.isArray(parsed.readingMovies) ? parsed.readingMovies : [];
+                        playingGamesList = Array.isArray(parsed.playingGames) ? parsed.playingGames : [];
+                        saveAllToStorage();
+                    } else {
+                        setActiveList(parsed);
+                        saveToStorage();
+                    }
+                    updateFilters();
+                    alert("Data imported successfully!");
+                } catch (err) { alert("Invalid file format."); }
+            };
+            reader.readAsText(file);
+        }
+
+        function formatEntryAsText(item, contentMode, isReading) {
+            const tags = getTags(item.vibe).join(', ') || 'None';
+            if (isReading) {
+                if (contentMode === 'movies') {
+                    const extra = item.type === 'Movie' ? `Time Stopped: ${item.timeStopped || 'N/A'}` : `Format: ${item.animation}`;
+                    return `${item.title}\n  Type: ${item.type}\n  Current Rating: ${item.rating.toFixed(2)}\n  ${extra}\n  Vibes: ${tags}`;
+                }
+                return `${item.title}\n  Current Rating: ${item.rating.toFixed(2)}\n  Vibes: ${tags}`;
+            }
+            if (contentMode === 'books') {
+                return `${item.title}\n  Rating: ${item.rating.toFixed(2)}\n  Pages: ${item.pages}\n  Vibes: ${tags}`;
+            } else if (contentMode === 'movies') {
+                const extra = item.type === 'Movie' ? `Year: ${item.year}` : `Format: ${item.animation}`;
+                return `${item.title}\n  Type: ${item.type}\n  Rating: ${item.rating.toFixed(2)}\n  ${extra}\n  Vibes: ${tags}`;
+            } else if (contentMode === 'games') {
+                return `${item.title}\n  Steam Rating: ${item.rating.toFixed(2)}\n  Length: ${item.length} hours\n  Genre: ${item.genre}\n  Vibes: ${tags}`;
+            }
+        }
+
+        function exportDataAsText() {
+            const section = (title, list, contentMode, isReading) => {
+                const body = list.length > 0 ? list.map(item => formatEntryAsText(item, contentMode, isReading)).join('\n\n') : '(No entries)';
+                return `${title}\n${'='.repeat(title.length)}\n\n${body}`;
+            };
+            const content = [
+                section('TBR Book List', tbrList, 'books', false),
+                section('TBR Movie/Series List', movieList, 'movies', false),
+                section('TBR Video Game List', gameList, 'games', false),
+                section('Currently Reading', readingBooksList, 'books', true),
+                section('Currently Watching', readingMoviesList, 'movies', true),
+                section('Currently Playing', playingGamesList, 'games', true)
+            ].join('\n\n\n');
+            const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(content);
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "roulette_export.txt");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        function updateSortOptions() {
+            const typeVal = document.getElementById('filter-type').value;
+            document.getElementById('filter-group-year').style.display = (currentListMode === 'new' && typeVal === 'Movie') ? 'flex' : 'none';
+            document.getElementById('filter-group-format').style.display = (currentListMode === 'new' && typeVal === 'Series') ? 'flex' : 'none';
+            if (typeVal !== 'Movie') {
+                document.getElementById('filter-year-cond').value = 'any';
+                document.getElementById('filter-year-val').value = '';
+            }
+            if (typeVal !== 'Series') {
+                document.getElementById('filter-format').value = 'none';
+            }
+        }
+
+        function onTypeFilterChange() {
+            updateSortOptions();
+            updateFilters();
+        }
+
+        function toggleDropdown() { document.getElementById('filter-dropdown-menu').classList.toggle('show'); }
+
+        window.onclick = function(event) {
+            if (!event.target.closest('.dropdown-container')) {
+                document.getElementById('filter-dropdown-menu').classList.remove('show');
+            }
+        }
+
+        function saveToStorage() { localStorage.setItem(storageKeys[getListKey()], JSON.stringify(getActiveList())); }
+        function getTags(vibeStr) { return (vibeStr || '').split(',').map(tag => tag.trim()).filter(tag => tag.length > 0); }
+
+        function getAllGenres() {
+            const genreSet = new Set();
+            [...gameList, ...playingGamesList].forEach(item => {
+                getTags(item.genre).forEach(g => genreSet.add(g));
+            });
+            return Array.from(genreSet).sort((a, b) => a.localeCompare(b));
+        }
+
+        function populateGenreSuggestions() {
+            const datalist = document.getElementById('genre-suggestions');
+            datalist.innerHTML = '';
+            getAllGenres().forEach(g => {
+                const opt = document.createElement('option');
+                opt.value = g;
+                datalist.appendChild(opt);
+            });
+        }
+
+        function populateGenreFilterDropdown() {
+            const select = document.getElementById('filter-genre');
+            const prevVal = select.value;
+            select.innerHTML = '<option value="any">All Genres</option>';
+            getAllGenres().forEach(g => {
+                const opt = document.createElement('option');
+                opt.value = g;
+                opt.textContent = g;
+                select.appendChild(opt);
+            });
+            select.value = getAllGenres().includes(prevVal) ? prevVal : 'any';
+        }
+
+        function renderGenreChips(containerId, hiddenId, arr, removeFn) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            arr.forEach(g => {
+                const span = document.createElement('span');
+                span.className = 'vibe-tag vibe-tag-clickable';
+                span.title = 'Click to remove';
+                span.textContent = g + ' \u00d7';
+                span.onclick = () => removeFn(g);
+                container.appendChild(span);
+            });
+            document.getElementById(hiddenId).value = arr.join(', ');
+        }
+
+        function renderNewGenreChips() {
+            renderGenreChips('new-genre-chips', 'new-genre', currentSelectedFormGenres, (g) => {
+                currentSelectedFormGenres = currentSelectedFormGenres.filter(x => x !== g);
+                renderNewGenreChips();
+            });
+        }
+
+        function renderEditGenreChips() {
+            renderGenreChips('edit-modal-genre-chips', 'edit-modal-genre', editModalSelectedGenres, (g) => {
+                editModalSelectedGenres = editModalSelectedGenres.filter(x => x !== g);
+                renderEditGenreChips();
+            });
+        }
+
+        function addGenreToForm(which, explicitVal = '') {
+            const inputId = which === 'new' ? 'new-genre-input' : 'edit-modal-genre-input';
+            const input = document.getElementById(inputId);
+            const val = explicitVal ? explicitVal.trim() : input.value.trim();
+            if (!val) return;
+            if (which === 'new') {
+                if (!currentSelectedFormGenres.some(g => g.toLowerCase() === val.toLowerCase())) currentSelectedFormGenres.push(val);
+                renderNewGenreChips();
+            } else {
+                if (!editModalSelectedGenres.some(g => g.toLowerCase() === val.toLowerCase())) editModalSelectedGenres.push(val);
+                renderEditGenreChips();
+            }
+            input.value = '';
+        }
+
+        function handleGenreDatalistSelection(event, which) {
+            const inputVal = event.target.value.trim();
+            if (!inputVal) return;
+            
+            const existingGenres = getAllGenres();
+            const exactMatch = existingGenres.find(g => g.toLowerCase() === inputVal.toLowerCase());
+            
+            if (exactMatch) {
+                addGenreToForm(which, exactMatch);
+            }
+        }
+
+        function handleGenreInputKeydown(event, which) {
+            if (event.key === 'Enter' || event.key === ',') {
+                event.preventDefault();
+                addGenreToForm(which);
+            }
+        }
+
+        function buildFilterDropdown() {
+            const container = document.getElementById('filter-dropdown-menu');
+            container.innerHTML = '';
+            masterTags.forEach(tag => {
+                const label = document.createElement('label');
+                label.className = 'dropdown-item';
+                label.innerHTML = `<input type="checkbox" ${currentFilterTags.includes(tag) ? 'checked' : ''}> ${tag}`;
+                label.querySelector('input').onchange = (e) => {
+                    if(e.target.checked) currentFilterTags.push(tag);
+                    else currentFilterTags = currentFilterTags.filter(t => t !== tag);
+                    updateFilters();
+                };
+                container.appendChild(label);
+            });
+        }
+
+        function buildFormTagPool() {
+            const container = document.getElementById('form-tag-pool-container');
+            container.innerHTML = '';
+            masterTags.forEach(tag => {
+                const span = document.createElement('span');
+                span.className = `vibe-tag vibe-tag-clickable ${currentSelectedFormTags.includes(tag) ? 'vibe-tag-active' : ''}`;
+                span.innerText = tag;
+                span.onclick = () => toggleTagInForm(tag);
+                container.appendChild(span);
+            });
+        }
+
+        function toggleTagInForm(tag) {
+            const index = currentSelectedFormTags.indexOf(tag);
+            index > -1 ? currentSelectedFormTags.splice(index, 1) : currentSelectedFormTags.push(tag);
+            document.getElementById('new-vibe').value = currentSelectedFormTags.join(', ');
+            buildFormTagPool();
+        }
+
+        function updateFilters() {
+            const isReading = currentListMode === 'reading';
+            const pageCond = document.getElementById('filter-pages-cond').value;
+            const pageVal = parseInt(document.getElementById('filter-pages-val').value);
+            const rateCond = document.getElementById('filter-rating-cond').value;
+            const rateVal = parseFloat(document.getElementById('filter-rating-val').value);
+            const typeVal = (currentMode === 'movies') ? document.getElementById('filter-type').value : 'any';
+            const yearCond = (!isReading && currentMode === 'movies') ? document.getElementById('filter-year-cond').value : 'any';
+            const yearVal = parseInt(document.getElementById('filter-year-val').value);
+            const formatVal = (!isReading && currentMode === 'movies') ? document.getElementById('filter-format').value : 'none';
+            const genreVal = (currentMode === 'games') ? document.getElementById('filter-genre').value : 'any';
+
+            populateGenreSuggestions();
+            populateGenreFilterDropdown();
+
+            const selLabel = document.querySelector('.dropdown-select');
+            if (selLabel) {
+                selLabel.innerText = currentFilterTags.length > 0 ? `${currentFilterTags.length} selected` : 'Select Vibes...';
+            }
+
+            const combineGamesChecked = document.getElementById('combine-games-checkbox').checked;
+            let wheelSourceList = getActiveList();
+            
+            if (currentMode === 'games' && combineGamesChecked) {
+                // Ensure temporary source properties tag items distinctly so metadata handles correctly during spins
+                const annotatedNew = gameList.map(item => ({ ...item, _originListKey: 'new_games' }));
+                const annotatedReading = playingGamesList.map(item => ({ ...item, _originListKey: 'reading_games' }));
+                wheelSourceList = [...annotatedNew, ...annotatedReading];
+            } else {
+                wheelSourceList = wheelSourceList.map(item => ({ ...item, _originListKey: getListKey() }));
+            }
+
+            filteredList = wheelSourceList.filter(item => {
+                if (currentFilterTags.length > 0) {
+                    const itemTags = getTags(item.vibe);
+                    const hasAny = currentFilterTags.some(tag => itemTags.includes(tag));
+                    if (!hasAny) return false;
+                }
+                
+                // Length filters context checks item details accurately
+                const originIsReading = item._originListKey.startsWith('reading');
+                if (!originIsReading && currentMode === 'books' && pageCond !== 'any' && !isNaN(pageVal)) {
+                    if (pageCond === 'under' && item.pages > pageVal) return false;
+                    if (pageCond === 'over' && item.pages <= pageVal) return false;
+                }
+                if (rateCond !== 'any' && !isNaN(rateVal)) {
+                    if (rateCond === 'under' && item.rating > rateVal) return false;
+                    if (rateCond === 'over' && item.rating <= rateVal) return false;
+                }
+                if (currentMode === 'movies' && typeVal !== 'any' && item.type !== typeVal) return false;
+                if (currentMode === 'games' && genreVal !== 'any') {
+                    const itemGenres = getTags(item.genre);
+                    if (!itemGenres.includes(genreVal)) return false;
+                }
+                if (!originIsReading && currentMode === 'movies' && typeVal === 'Movie' && yearCond !== 'any' && !isNaN(yearVal)) {
+                    if (yearCond === 'under' && item.year > yearVal) return false;
+                    if (yearCond === 'over' && item.year <= yearVal) return false;
+                }
+                return true;
+            });
+
+            if (!isReading && currentMode === 'movies' && typeVal === 'Series' && formatVal !== 'none') {
+                filteredList.sort((a, b) => (a.animation === formatVal ? 0 : 1) - (b.animation === formatVal ? 0 : 1));
+            }
+
+            renderTable();
+            drawWheel();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tbr-body');
+            tbody.innerHTML = '';
+            const list = getActiveList();
+            const isReading = currentListMode === 'reading';
+            const isBooks = currentMode === 'books';
+            const isMovies = currentMode === 'movies';
+            const isGames = currentMode === 'games';
+            const showExtraCol = !(isReading && (isBooks || isGames));
+
+            // UI Table display explicitly renders only items contained within the currently active category view list layout
+            const activeFilteredList = filteredList.filter(item => item._originListKey === getListKey());
+
+            activeFilteredList.forEach((item) => {
+                const globalIndex = list.findIndex(b => b.title === item.title);
+                const tagsHtml = getTags(item.vibe).map(tag => `<span class="vibe-tag">${tag}</span>`).join('');
+                const vibeCell = isGames ? '' : `<td data-label="Vibes / Themes">${tagsHtml}</td>`;
+                const ratingLabel = document.getElementById('table-rating-label').innerText;
+                const tr = document.createElement('tr');
+                const genreMidCell = isGames && isReading ? `<td data-label="Genre">${item.genre || ''}</td>` : '';
+                const ratingCell = `<td data-label="${ratingLabel}" style="color: #7b856e; font-weight: bold;">⭐ ${item.rating.toFixed(2)}</td>`;
+                const actionCell = `<td class="action-cell-wrap"><div class="action-cell"><button class="edit-btn" onclick="startEdit(${globalIndex})">Edit</button><button class="delete-btn" onclick="directDelete(${globalIndex})">Remove</button></div></td>`;
+
+                if (!showExtraCol) {
+                    tr.innerHTML = `
+                        <td data-label="Title"><strong>${item.title}</strong></td>
+                        ${vibeCell}
+                        ${genreMidCell}
+                        ${ratingCell}
+                        ${actionCell}
+                    `;
+                } else {
+                    let extraCell;
+                    let genreEndCell = '';
+                    if (isReading) {
+                        if (item.type === 'Movie') {
+                            extraCell = `⏱ ${item.timeStopped || '—'}`;
+                        } else {
+                            extraCell = `<span class="vibe-tag">${item.animation}</span>`;
+                        }
+                    } else if (isBooks) {
+                        extraCell = `${item.pages} pages`;
+                    } else if (isMovies) {
+                        if (item.type === 'Movie') {
+                            extraCell = `${item.year}`;
+                        } else {
+                            extraCell = `<span class="vibe-tag">${item.animation}</span>`;
+                        }
+                    } else if (isGames) {
+                        extraCell = `${item.length} hrs`;
+                        genreEndCell = `<td data-label="Genre">${item.genre || ''}</td>`;
+                    }
+                    const extraLabel = document.getElementById('table-extra-label').innerText;
+                    tr.innerHTML = `
+                        <td data-label="Title"><strong>${item.title}</strong></td>
+                        ${vibeCell}
+                        ${genreMidCell}
+                        ${ratingCell}
+                        <td data-label="${extraLabel}">${extraCell}</td>
+                        ${genreEndCell}
+                        ${actionCell}
+                    `;
+                }
+                tbody.appendChild(tr);
+            });
+        }
+
+        function drawWheel() {
+            const canvas = document.getElementById('wheel');
+            const ctx = canvas.getContext('2d');
+            const cx = canvas.width / 2, cy = canvas.height / 2, radius = cx;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (filteredList.length === 0) return;
+            const sliceAngle = (2 * Math.PI) / filteredList.length;
+            const pastelColors = ['#e2f0cb', '#bffcc6', '#fff9a6', '#ffc6ff', '#c7ceea', '#ffb7b2', '#ffdac1', '#e8eaed', '#dbffd6', '#fdfabe', '#d4f0f0'];
+            filteredList.forEach((book, index) => {
+                const startAngle = index * sliceAngle;
+                ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, radius, startAngle, startAngle + sliceAngle);
+                ctx.fillStyle = pastelColors[index % pastelColors.length]; ctx.fill(); ctx.stroke();
+                ctx.save(); ctx.translate(cx, cy); ctx.rotate(startAngle + sliceAngle / 2);
+                ctx.textAlign = 'right'; ctx.fillStyle = '#444e37'; ctx.font = 'bold 12px Arial';
+                ctx.fillText(book.title.length > 20 ? book.title.substring(0, 18) + '...' : book.title, radius - 15, 4);
+                ctx.restore();
+            });
+        }
+
+        function spinWheel() {
+            if (filteredList.length === 0) return;
+            const targetFilteredIndex = Math.floor(Math.random() * filteredList.length);
+            const sliceAngle = 360 / filteredList.length;
+            // Random offset within the segment for more dynamic results
+            const randomOffset = (Math.random() - 0.5) * sliceAngle;
+            const stopAngle = (targetFilteredIndex * sliceAngle) + (sliceAngle / 2) + randomOffset;
+            currentRotation += (360 * 5) + (270 - stopAngle) - (currentRotation % 360);
+            document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
+            setTimeout(() => {
+                const winner = filteredList[targetFilteredIndex];
+                selectedBookGlobalListKey = winner._originListKey;
+                
+                let targetMasterList;
+                if (selectedBookGlobalListKey === 'new_games') targetMasterList = gameList;
+                else if (selectedBookGlobalListKey === 'reading_games') targetMasterList = playingGamesList;
+                else targetMasterList = getActiveList();
+
+                selectedBookIndexInGlobal = targetMasterList.findIndex(b => b.title === winner.title);
+                openModal(winner);
+            }, 4000);
+        }
+
+        function openModal(item) {
+            document.getElementById('modal-title').innerText = item.title;
+            const isBooks = currentMode === 'books';
+            const isMovies = currentMode === 'movies';
+            const isGames = currentMode === 'games';
+            
+            const originIsReading = item._originListKey ? item._originListKey.startsWith('reading') : (currentListMode === 'reading');
+
+            if (isGames) {
+                document.getElementById('modal-vibe').style.display = 'none';
+                document.getElementById('modal-vibe').innerHTML = '';
+            } else {
+                document.getElementById('modal-vibe').style.display = 'block';
+                const tagsHtml = getTags(item.vibe).map(tag => `<span class="vibe-tag" style="font-size: 13px; padding: 4px 10px; background: #fdfabe;">${tag}</span>`).join(' ');
+                document.getElementById('modal-vibe').innerHTML = tagsHtml;
+            }
+            document.getElementById('modal-rating').innerText = item.rating.toFixed(2);
+
+            if (originIsReading && (isBooks || isGames)) {
+                document.getElementById('modal-pages-stat').style.display = 'none';
+                document.getElementById('modal-type-stat').style.display = 'none';
+            } else if (originIsReading && isMovies) {
+                document.getElementById('modal-pages-stat').style.display = 'none';
+                document.getElementById('modal-type-stat').style.display = 'block';
+                if (item.type === 'Movie') {
+                    document.getElementById('modal-type-emoji').innerText = '⏱';
+                    document.getElementById('modal-type').innerText = `Stopped at ${item.timeStopped || '—'}`;
+                } else {
+                    document.getElementById('modal-type-emoji').innerText = '🎞️';
+                    document.getElementById('modal-type').innerText = item.animation;
+                }
+            } else {
+                if (isBooks) {
+                    document.getElementById('modal-pages-stat').style.display = 'block';
+                    document.getElementById('modal-type-stat').style.display = 'none';
+                    document.getElementById('modal-pages-stat').innerHTML = `📚 <span id="modal-pages">${item.pages}</span> pages`;
+                } else if (isMovies) {
+                    document.getElementById('modal-pages-stat').style.display = 'none';
+                    document.getElementById('modal-type-stat').style.display = 'block';
+                    if (item.type === 'Movie') {
+                        document.getElementById('modal-type-emoji').innerText = '📅';
+                        document.getElementById('modal-type').innerText = item.year;
+                    } else {
+                        document.getElementById('modal-type-emoji').innerText = '🎞️';
+                        document.getElementById('modal-type').innerText = item.animation;
+                    }
+                } else if (isGames) {
+                    document.getElementById('modal-pages-stat').style.display = 'block';
+                    document.getElementById('modal-type-stat').style.display = 'block';
+                    document.getElementById('modal-pages-stat').innerHTML = `🎮 <span>${item.length}</span> hrs`;
+                    document.getElementById('modal-type-stat').innerHTML = `🏷️ <span>${item.genre}</span>`;
+                }
+            }
+
+            const moveBtn = document.getElementById('btn-move-current');
+            if (!originIsReading) {
+                moveBtn.style.display = 'inline-block';
+                if (currentMode === 'books') moveBtn.innerText = 'Move to Reading Now';
+                else if (currentMode === 'movies') moveBtn.innerText = 'Move to Watching Now';
+                else if (currentMode === 'games') moveBtn.innerText = 'Move to Playing Now';
+            } else {
+                moveBtn.style.display = 'none';
+            }
+
+            document.getElementById('banner-modal').classList.add('active');
+        }
+
+        function closeModal() { document.getElementById('banner-modal').classList.remove('active'); }
+
+        function acceptBook() { 
+            if(selectedBookIndexInGlobal > -1) {
+                executeRemoval(selectedBookIndexInGlobal, selectedBookGlobalListKey);
+            } 
+            closeModal(); 
+        }
+
+        function moveToCurrent() {
+            if (selectedBookIndexInGlobal === -1) return;
+
+            let targetMasterList;
+            if (selectedBookGlobalListKey === 'new_games') targetMasterList = gameList;
+            else if (selectedBookGlobalListKey === 'reading_games') targetMasterList = playingGamesList;
+            else targetMasterList = getActiveList();
+
+            const item = targetMasterList[selectedBookIndexInGlobal];
+
+            let newItem = {
+                title: item.title,
+                vibe: item.vibe,
+                rating: 0
+            };
+
+            if (currentMode === 'movies') {
+                newItem.type = item.type;
+                if (item.type === 'Movie') {
+                    newItem.timeStopped = '';
+                } else {
+                    newItem.animation = item.animation;
+                }
+                readingMoviesList.push(newItem);
+            } else if (currentMode === 'books') {
+                readingBooksList.push(newItem);
+            } else if (currentMode === 'games') {
+                newItem.genre = item.genre || 'Unknown';
+                playingGamesList.push(newItem);
+            }
+
+            targetMasterList.splice(selectedBookIndexInGlobal, 1);
+
+            saveAllToStorage();
+            updateFilters();
+            closeModal();
+            document.getElementById('undo-btn').style.display = 'none';
+        }
+
+        function directDelete(globalIndex) { executeRemoval(globalIndex, getListKey()); }
+
+        function executeRemoval(index, listKeyContext) {
+            let list;
+            const targetKey = listKeyContext || getListKey();
+            if (targetKey === 'new_books') list = tbrList;
+            else if (targetKey === 'new_movies') list = movieList;
+            else if (targetKey === 'new_games') list = gameList;
+            else if (targetKey === 'reading_books') list = readingBooksList;
+            else if (targetKey === 'reading_movies') list = readingMoviesList;
+            else if (targetKey === 'reading_games') list = playingGamesList;
+            else list = getActiveList();
+
+            lastRemovedBook = list[index]; 
+            lastRemovedIndex = index;
+            lastRemovedFromListKey = targetKey;
+
+            list.splice(index, 1);
+            saveAllToStorage(); 
+            updateFilters();
+            document.getElementById('undo-btn').style.display = 'block';
+        }
+
+        function triggerUndo() {
+            if (lastRemovedBook) {
+                let list;
+                if (lastRemovedFromListKey === 'new_books') list = tbrList;
+                else if (lastRemovedFromListKey === 'new_movies') list = movieList;
+                else if (lastRemovedFromListKey === 'new_games') list = gameList;
+                else if (lastRemovedFromListKey === 'reading_books') list = readingBooksList;
+                else if (lastRemovedFromListKey === 'reading_movies') list = readingMoviesList;
+                else if (lastRemovedFromListKey === 'reading_games') list = playingGamesList;
+                else list = getActiveList();
+
+                list.splice(lastRemovedIndex, 0, lastRemovedBook);
+                saveAllToStorage(); 
+                updateFilters();
+                document.getElementById('undo-btn').style.display = 'none';
+            }
+        }
+        function startEdit(globalIndex) {
+            const item = getActiveList()[globalIndex];
+            editingItemIndex = globalIndex;
+
+            document.getElementById('edit-modal-index').value = globalIndex;
+            document.getElementById('edit-modal-title').value = item.title;
+            document.getElementById('edit-modal-rating').value = item.rating;
+
+            const isReading = currentListMode === 'reading';
+            if (isReading && (currentMode === 'books' || currentMode === 'games')) {
+                document.getElementById('edit-modal-pages-container').style.display = 'none';
+                document.getElementById('edit-modal-type-container').style.display = 'none';
+                document.getElementById('edit-modal-year-container').style.display = 'none';
+                document.getElementById('edit-modal-animation-container').style.display = 'none';
+                document.getElementById('edit-modal-time-stopped-container').style.display = 'none';
+                document.getElementById('edit-modal-genre-container').style.display = isGames ? 'block' : 'none';
+                document.getElementById('edit-modal-length-container').style.display = 'none';
+                if (isGames) {
+                    editModalSelectedGenres = getTags(item.genre);
+                    document.getElementById('edit-modal-genre-input').value = '';
+                    populateGenreSuggestions();
+                    renderEditGenreChips();
+                }
+            } else if (isReading && currentMode === 'movies') {
+                document.getElementById('edit-modal-pages-container').style.display = 'none';
+                document.getElementById('edit-modal-type-container').style.display = 'block';
+                document.getElementById('edit-modal-genre-container').style.display = 'none';
+                document.getElementById('edit-modal-length-container').style.display = 'none';
+                document.getElementById('edit-modal-type').value = item.type || 'Movie';
+                updateEditTypeFields();
+                if (item.type === 'Movie') {
+                    document.getElementById('edit-modal-time-stopped').value = item.timeStopped || '';
+                } else {
+                    document.getElementById('edit-modal-animation').value = item.animation || 'Live Action';
+                }
+            } else if (!isReading && currentMode === 'books') {
+                document.getElementById('edit-modal-pages-container').style.display = 'block';
+                document.getElementById('edit-modal-pages').value = item.pages;
+                document.getElementById('edit-modal-type-container').style.display = 'none';
+                document.getElementById('edit-modal-year-container').style.display = 'none';
+                document.getElementById('edit-modal-animation-container').style.display = 'none';
+                document.getElementById('edit-modal-time-stopped-container').style.display = 'none';
+                document.getElementById('edit-modal-genre-container').style.display = 'none';
+                document.getElementById('edit-modal-length-container').style.display = 'none';
+            } else if (!isReading && currentMode === 'movies') {
+                document.getElementById('edit-modal-pages-container').style.display = 'none';
+                document.getElementById('edit-modal-genre-container').style.display = 'none';
+                document.getElementById('edit-modal-length-container').style.display = 'none';
+                document.getElementById('edit-modal-type-container').style.display = 'block';
+                document.getElementById('edit-modal-type').value = item.type || 'Movie';
+                updateEditTypeFields();
+                if (item.type === 'Movie') {
+                    document.getElementById('edit-modal-year').value = item.year || '';
+                } else {
+                    document.getElementById('edit-modal-animation').value = item.animation || 'Live Action';
+                }
+            } else if (!isReading && currentMode === 'games') {
+                document.getElementById('edit-modal-pages-container').style.display = 'none';
+                document.getElementById('edit-modal-type-container').style.display = 'none';
+                document.getElementById('edit-modal-year-container').style.display = 'none';
+                document.getElementById('edit-modal-animation-container').style.display = 'none';
+                document.getElementById('edit-modal-time-stopped-container').style.display = 'none';
+                document.getElementById('edit-modal-genre-container').style.display = 'block';
+                document.getElementById('edit-modal-length-container').style.display = 'block';
+                editModalSelectedGenres = getTags(item.genre);
+                document.getElementById('edit-modal-genre-input').value = '';
+                populateGenreSuggestions();
+                renderEditGenreChips();
+                document.getElementById('edit-modal-length').value = item.length || '';
+            }
+
+            document.getElementById('edit-vibe-group').style.display = (currentMode === 'games') ? 'none' : 'flex';
+            editModalSelectedTags = getTags(item.vibe);
+            buildEditModalTagPool();
+            document.getElementById('edit-modal-overlay').classList.add('active');
+        }
+
+        function closeEditModal() { document.getElementById('edit-modal-overlay').classList.remove('active'); }
+
+        function buildEditModalTagPool() {
+            const container = document.getElementById('edit-modal-tag-pool-container');
+            container.innerHTML = '';
+            masterTags.forEach(tag => {
+                const span = document.createElement('span');
+                span.className = `vibe-tag vibe-tag-clickable ${editModalSelectedTags.includes(tag) ? 'vibe-tag-active' : ''}`;
+                span.innerText = tag;
+                span.onclick = () => {
+                    const idx = editModalSelectedTags.indexOf(tag);
+                    idx > -1 ? editModalSelectedTags.splice(idx, 1) : editModalSelectedTags.push(tag);
+                    buildEditModalTagPool();
+                };
+                container.appendChild(span);
+            });
+        }
+
+        function saveEdit() {
+            const idx = editingItemIndex;
+            if (idx === -1) return;
+
+            const ratingInput = document.getElementById('edit-modal-rating');
+            const ratingValue = parseFloat(ratingInput.value);
+            
+            if (isNaN(ratingValue) || ratingValue < 0) {
+                return alert("Please enter a valid positive rating.");
+            }
+
+            const item = getActiveList()[idx];
+            item.title = document.getElementById('edit-modal-title').value.trim();
+            item.rating = ratingValue;
+            item.vibe = (currentMode === 'games') ? '' : editModalSelectedTags.join(', ');
+
+            const isReading = currentListMode === 'reading';
+            if (currentMode === 'games') {
+                item.genre = document.getElementById('edit-modal-genre').value.trim();
+                if (!isReading) {
+                    item.length = parseFloat(document.getElementById('edit-modal-length').value);
+                }
+            } else if (!isReading && currentMode === 'books') {
+                item.pages = parseInt(document.getElementById('edit-modal-pages').value);
+            } else if (currentMode === 'movies') {
+                item.type = document.getElementById('edit-modal-type').value;
+                if (isReading) {
+                    if (item.type === 'Movie') {
+                        item.timeStopped = document.getElementById('edit-modal-time-stopped').value.trim();
+                        delete item.animation;
+                    } else {
+                        item.animation = document.getElementById('edit-modal-animation').value;
+                        delete item.timeStopped;
+                    }
+                } else {
+                    if (item.type === 'Movie') {
+                        item.year = parseInt(document.getElementById('edit-modal-year').value);
+                        delete item.animation;
+                    } else {
+                        item.animation = document.getElementById('edit-modal-animation').value;
+                        delete item.year;
+                    }
+                }
+            }
+            saveAllToStorage();
+            updateFilters();
+            closeEditModal();
+        }
+
+        function updateTypeFields() {
+            const type = document.getElementById('new-type').value;
+            const isReading = currentListMode === 'reading';
+            const isBooks = currentMode === 'books';
+            const isGames = currentMode === 'games';
+
+            if (isBooks || isGames) {
+                document.getElementById('new-year-container').style.display = 'none';
+                document.getElementById('new-animation-container').style.display = 'none';
+                document.getElementById('new-time-stopped-container').style.display = 'none';
+            } else if (isReading) {
+                document.getElementById('new-year-container').style.display = 'none';
+                document.getElementById('new-animation-container').style.display = (type === 'Series') ? 'block' : 'none';
+                document.getElementById('new-time-stopped-container').style.display = (type === 'Movie') ? 'block' : 'none';
+            } else {
+                document.getElementById('new-time-stopped-container').style.display = 'none';
+                document.getElementById('new-year-container').style.display = (type === 'Movie') ? 'block' : 'none';
+                document.getElementById('new-animation-container').style.display = (type === 'Series') ? 'block' : 'none';
+            }
+        }
+
+        function updateEditTypeFields() {
+            const type = document.getElementById('edit-modal-type').value;
+            const isReading = currentListMode === 'reading';
+            const isBooks = currentMode === 'books';
+            const isGames = currentMode === 'games';
+
+            if (isBooks || isGames) {
+                document.getElementById('edit-modal-year-container').style.display = 'none';
+                document.getElementById('edit-modal-animation-container').style.display = 'none';
+                document.getElementById('edit-modal-time-stopped-container').style.display = 'none';
+            } else if (isReading) {
+                document.getElementById('edit-modal-year-container').style.display = 'none';
+                document.getElementById('edit-modal-animation-container').style.display = (type === 'Series') ? 'block' : 'none';
+                document.getElementById('edit-modal-time-stopped-container').style.display = (type === 'Movie') ? 'block' : 'none';
+            } else {
+                document.getElementById('edit-modal-time-stopped-container').style.display = 'none';
+                document.getElementById('edit-modal-year-container').style.display = (type === 'Movie') ? 'block' : 'none';
+                document.getElementById('edit-modal-animation-container').style.display = (type === 'Series') ? 'block' : 'none';
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('new-title').value = '';
+            document.getElementById('new-rating').value = '';
+            document.getElementById('new-pages').value = '';
+            document.getElementById('new-year').value = '';
+            document.getElementById('new-animation').value = 'Live Action';
+            document.getElementById('new-time-stopped').value = '';
+            document.getElementById('new-genre').value = '';
+            document.getElementById('new-genre-input').value = '';
+            currentSelectedFormGenres = [];
+            renderNewGenreChips();
+            populateGenreSuggestions();
+            document.getElementById('new-length').value = '';
+            document.getElementById('new-vibe').value = '';
+            document.getElementById('new-type').value = 'Movie';
+            currentSelectedFormTags = [];
+            buildFormTagPool();
+            updateTypeFields();
+        }
+
+        function handleSubmit() {
+            const title = document.getElementById('new-title').value.trim();
+            const ratingInput = document.getElementById('new-rating');
+            const rating = parseFloat(ratingInput.value);
+            const isBooks = currentMode === 'books';
+            const isGames = currentMode === 'games';
+            const isReading = currentListMode === 'reading';
+            const vibe = isGames ? '' : document.getElementById('new-vibe').value.trim();
+
+            if (!title || isNaN(rating) || rating < 0) {
+                return alert("Title and a valid positive Rating (0 or higher) are required!");
+            }
+            
+            let newItem = { title, rating, vibe };
+
+            if (!isReading && isBooks) {
+                const pages = parseInt(document.getElementById('new-pages').value);
+                if (isNaN(pages)) return alert("Pages required!");
+                newItem.pages = pages;
+            } else if (isGames) {
+                const genre = document.getElementById('new-genre').value.trim();
+                newItem.genre = genre || 'Unknown';
+                if (!isReading) {
+                    const length = parseFloat(document.getElementById('new-length').value);
+                    if (isNaN(length)) return alert("Length required!");
+                    newItem.length = length;
+                }
+            } else if (currentMode === 'movies') {
+                const type = document.getElementById('new-type').value;
+                newItem.type = type;
+                if (isReading) {
+                    if (type === 'Movie') {
+                        newItem.timeStopped = document.getElementById('new-time-stopped').value.trim();
+                    } else {
+                        newItem.animation = document.getElementById('new-animation').value;
+                    }
+                } else {
+                    if (type === 'Movie') {
+                        const year = parseInt(document.getElementById('new-year').value);
+                        if (isNaN(year)) return alert("Year required!");
+                        newItem.year = year;
+                    } else {
+                        newItem.animation = document.getElementById('new-animation').value;
+                    }
+                }
+            }
+            getActiveList().push(newItem);
+            saveAllToStorage();
+            updateFilters();
+            resetForm();
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
