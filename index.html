@@ -555,6 +555,7 @@
                 </div>
                 <div style="display: flex; gap: 10px; align-items: center; justify-content: center; margin-top: 15px;">
                     <button onclick="spinSmallWheel()" style="padding: 8px 16px; font-size: 14px; margin-top: 0;">Roll Amount</button>
+                    <button id="one-down-btn" onclick="decreaseSpins()" style="display: none; background-color: #ffb3ba; color: #5e3a3a; padding: 8px 16px; font-size: 14px; margin-top: 0;">1 Down</button>
                     <button id="done-btn" onclick="completeSmallWheel()" style="display: none; background-color: var(--accent-yellow); color: #5c572b; padding: 8px 16px; font-size: 14px; margin-top: 0;">Done!</button>
                 </div>
                 <div id="small-wheel-result" style="margin-top: 15px; font-size: 18px; font-weight: bold; min-height: 24px; color: #444e37;"></div>
@@ -820,6 +821,15 @@
             const storedPlayingGames = localStorage.getItem(storageKeys.reading_games);
             if (storedPlayingGames) playingGamesList = JSON.parse(storedPlayingGames);
 
+            // Restore saved spins
+            const savedSpins = localStorage.getItem('currentSpins');
+            if (savedSpins) {
+                currentSpins = parseInt(savedSpins);
+                document.getElementById('small-wheel-result').innerText = `You rolled: ${currentSpins} spins!`;
+                document.getElementById('done-btn').style.display = 'inline-block';
+                updateOneDownButtonVisibility();
+            }
+
             // Restore last page
             const lastMode = localStorage.getItem('lastMode');
             if (lastMode && ['books', 'movies', 'games'].includes(lastMode)) {
@@ -1020,15 +1030,19 @@
 
             setTimeout(() => {
                 currentSpins = result;
+                localStorage.setItem('currentSpins', currentSpins);
                 document.getElementById('small-wheel-result').innerText = `You rolled: ${currentSpins} spins!`;
                 document.getElementById('done-btn').style.display = 'inline-block';
+                updateOneDownButtonVisibility();
             }, 1500);
         }
 
         function completeSmallWheel() {
             currentSpins = 0; // Reset
+            localStorage.removeItem('currentSpins');
             document.getElementById('small-wheel-result').innerText = '';
             document.getElementById('done-btn').style.display = 'none';
+            document.getElementById('one-down-btn').style.display = 'none';
             fireConfetti();
             
             const msgs = [
@@ -1059,37 +1073,64 @@
             const toast = document.createElement('div');
             toast.innerText = msg;
             toast.style.position = 'fixed';
-            toast.style.bottom = '30px';
+            toast.style.top = '50%';
             toast.style.left = '50%';
-            toast.style.transform = 'translateX(-50%)';
+            toast.style.transform = 'translate(-50%, -50%)';
             toast.style.backgroundColor = 'var(--primary-color)';
             toast.style.color = '#444e37';
-            toast.style.padding = '12px 24px';
-            toast.style.borderRadius = '8px';
-            toast.style.boxShadow = '0 4px 10px rgba(0,0,0,0.2)';
+            toast.style.padding = '40px 60px';
+            toast.style.borderRadius = '16px';
+            toast.style.boxShadow = '0 10px 40px rgba(0,0,0,0.3)';
             toast.style.fontWeight = 'bold';
+            toast.style.fontSize = '32px';
             toast.style.zIndex = '10000';
             toast.style.opacity = '0';
             toast.style.transition = 'opacity 0.3s ease';
+            toast.style.textAlign = 'center';
+            toast.style.border = '3px solid #fff9a6';
             document.body.appendChild(toast);
             
             setTimeout(() => toast.style.opacity = '1', 10);
             setTimeout(() => {
                 toast.style.opacity = '0';
                 setTimeout(() => toast.remove(), 300);
-            }, 3000);
+            }, 4000);
         }
 
         function trackSpin() {
             if (currentSpins > 0) {
                 currentSpins--;
+                localStorage.setItem('currentSpins', currentSpins);
                 if (currentSpins === 0) {
                     completeSmallWheel();
                 } else {
                     document.getElementById('small-wheel-result').innerText = `Spins remaining: ${currentSpins}`;
+                    updateOneDownButtonVisibility();
                 }
             }
             closeModal();
+        }
+
+        function decreaseSpins() {
+            if (currentSpins > 0) {
+                currentSpins--;
+                localStorage.setItem('currentSpins', currentSpins);
+                if (currentSpins === 0) {
+                    completeSmallWheel();
+                } else {
+                    document.getElementById('small-wheel-result').innerText = `You rolled: ${currentSpins} spins!`;
+                    updateOneDownButtonVisibility();
+                }
+            }
+        }
+
+        function updateOneDownButtonVisibility() {
+            const oneDownBtn = document.getElementById('one-down-btn');
+            if (currentSpins > 1) {
+                oneDownBtn.style.display = 'inline-block';
+            } else {
+                oneDownBtn.style.display = 'none';
+            }
         }
 
         function fireConfetti() {
