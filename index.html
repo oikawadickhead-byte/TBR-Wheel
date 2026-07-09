@@ -378,6 +378,10 @@
     .mode-toggle button { margin: 0; padding: 10px 22px; font-size: 14px; background-color: transparent; color: var(--text-muted); box-shadow: none; }
     .mode-toggle button.active { background-color: var(--primary-color); color: #444e37; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); }
 
+    #energy-level-toggle button { padding: 6px 8px; font-size: 12px; white-space: nowrap; flex: 1; }
+
+    #energy-level-toggle { padding: 2px !important; }
+
     .view-toggle {
         position: fixed;
         top: 12px;
@@ -541,9 +545,11 @@
             <!-- AMOUNT OF SPINS WHEEL CONTAINER -->
             <div id="small-wheel-container" style="display: none; margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px; width: 100%; text-align: center; flex-direction: column; align-items: center;">
                 <h3 style="color: #444e37; margin-bottom: 15px;">Amount of Spins</h3>
-                <div class="filter-group" style="width: 100%; max-width: 200px; margin: 0 auto 15px auto;">
-                    <label>Energy Level</label>
-                    <select id="energy-level">
+                <div class="mode-toggle" id="energy-level-toggle" style="width: 100%; max-width: 280px; margin: 0 auto 15px auto;">
+                    <button type="button" onclick="setEnergyLevel('Tired')">Tired</button>
+                    <button type="button" class="active" onclick="setEnergyLevel('Normal')">Normal</button>
+                    <button type="button" onclick="setEnergyLevel('Energized')">Energized</button>
+                    <select id="energy-level" style="display: none;">
                         <option value="Tired">Tired</option>
                         <option value="Normal" selected>Normal</option>
                         <option value="Energized">Energized</option>
@@ -728,6 +734,14 @@
         }
 
         const masterTags = ["Surrealist", "Heavy", "Comedy", "Dystopian", "Contemporary", "Character-Driven", "Thrilling", "Trashy", "Mindfuck"];
+        
+        function getAvailableTags() {
+            if (currentListMode === 'reading' && currentMode === 'books') {
+                return [...masterTags, "Audiobook"];
+            }
+            return masterTags;
+        }
+
         let tbrList = [];
         let movieList = [];
         let gameList = [];
@@ -989,6 +1003,20 @@
                 ctx.fillText((i+1).toString(), radius - 15, 6);
                 ctx.restore();
             }
+        }
+
+        function setEnergyLevel(level) {
+            // Update the hidden select element for compatibility
+            document.getElementById('energy-level').value = level;
+            
+            // Update button states to match mode-toggle style
+            const buttons = document.querySelectorAll('#energy-level-toggle button[type="button"]');
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent === level) {
+                    btn.classList.add('active');
+                }
+            });
         }
 
         function spinSmallWheel() {
@@ -1386,7 +1414,7 @@
         function buildFilterDropdown() {
             const container = document.getElementById('filter-dropdown-menu');
             container.innerHTML = '';
-            masterTags.forEach(tag => {
+            getAvailableTags().forEach(tag => {
                 const label = document.createElement('label');
                 label.className = 'dropdown-item';
                 label.innerHTML = `<input type="checkbox" ${currentFilterTags.includes(tag) ? 'checked' : ''}> ${tag}`;
@@ -1402,7 +1430,7 @@
         function buildFormTagPool() {
             const container = document.getElementById('form-tag-pool-container');
             container.innerHTML = '';
-            masterTags.forEach(tag => {
+            getAvailableTags().forEach(tag => {
                 const span = document.createElement('span');
                 span.className = `vibe-tag vibe-tag-clickable ${currentSelectedFormTags.includes(tag) ? 'vibe-tag-active' : ''}`;
                 span.innerText = tag;
@@ -1837,7 +1865,7 @@
         function buildEditModalTagPool() {
             const container = document.getElementById('edit-modal-tag-pool-container');
             container.innerHTML = '';
-            masterTags.forEach(tag => {
+            getAvailableTags().forEach(tag => {
                 const span = document.createElement('span');
                 span.className = `vibe-tag vibe-tag-clickable ${editModalSelectedTags.includes(tag) ? 'vibe-tag-active' : ''}`;
                 span.innerText = tag;
