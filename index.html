@@ -1792,6 +1792,7 @@
             document.getElementById('edit-modal-rating').value = item.rating;
 
             const isReading = currentListMode === 'reading';
+            const isGames = currentMode === 'games';
             if (isReading && (currentMode === 'books' || currentMode === 'games')) {
                 document.getElementById('edit-modal-pages-container').style.display = 'none';
                 document.getElementById('edit-modal-type-container').style.display = 'none';
