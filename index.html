@@ -1258,6 +1258,12 @@
             populateGenreFilterDropdown();
             updateFilters();
             applyModeUI();
+
+            // Restore Goals Mode if it was last active
+            const lastGoalsMode = localStorage.getItem('lastGoalsMode');
+            if (lastGoalsMode === '1') {
+                toggleGoalsMode();
+            }
         }
 
         function switchMode(mode) {
@@ -2537,6 +2543,7 @@
 
         function toggleGoalsMode() {
             goalsMode = !goalsMode;
+            localStorage.setItem('lastGoalsMode', goalsMode ? '1' : '0');
             const btn = document.getElementById('goals-mode-btn');
             const goalsPanel = document.getElementById('goals-mode-panel');
             const filterSection = document.querySelector('.filter-section');
@@ -2919,7 +2926,7 @@
                         </span>
                         <span style="display:flex; gap:6px;">
                             <button onclick="openEditGoalModal(${goal.id})" style="background:var(--edit-color);color:#3b4052;padding:4px 10px;font-size:11px;margin:0;border-radius:5px;border:none;cursor:pointer;box-shadow:none;">Edit</button>
-                            <button onclick="deleteGoal(${goal.id})" style="background:var(--danger-color);color:#5e3a3a;padding:4px 10px;font-size:11px;margin:0;border-radius:5px;border:none;cursor:pointer;box-shadow:none;">Remove</button>
+                            <button onclick="deleteGoalForDate(${goal.id}, '${date}')" style="background:var(--danger-color);color:#5e3a3a;padding:4px 10px;font-size:11px;margin:0;border-radius:5px;border:none;cursor:pointer;box-shadow:none;" title="Remove this goal's milestones for this date only">Remove</button>
                         </span>
                     `;
                     listEl.appendChild(goalHeader);
@@ -2975,6 +2982,16 @@
 
         function deleteGoal(goalId) {
             goalsData = goalsData.filter(g => g.id !== goalId);
+            saveGoals();
+            renderGoals();
+        }
+
+        function deleteGoalForDate(goalId, date) {
+            const goalIdx = goalsData.findIndex(g => g.id === goalId);
+            if (goalIdx === -1) return;
+            const goal = goalsData[goalIdx];
+            goal.milestones = goal.milestones.filter(ms => (ms.date || goal.date) !== date);
+            if (goal.milestones.length === 0) goalsData.splice(goalIdx, 1);
             saveGoals();
             renderGoals();
         }
