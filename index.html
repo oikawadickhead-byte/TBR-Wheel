@@ -2613,7 +2613,7 @@
 
             populateBookSelect('goal-book-select', null);
             const today = new Date();
-            const todayStr = today.toISOString().split('T')[0];
+            const todayStr = toLocalDateStr(today);
             document.getElementById('goal-date-from-input').value = todayStr;
             document.getElementById('goal-date-to-input').value = todayStr;
             setGoalType('percentage');
@@ -2660,6 +2660,16 @@
             return milestones;
         }
 
+        // Formats a Date object as a local "YYYY-MM-DD" string, without
+        // going through toISOString() (which converts to UTC first and can
+        // shift the date by a day in timezones ahead of/behind UTC).
+        function toLocalDateStr(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
         function buildDateRange(fromStr, toStr) {
             const [fy, fm, fd] = fromStr.split('-').map(Number);
             const [ty, tm, td] = toStr.split('-').map(Number);
@@ -2668,7 +2678,7 @@
             const dates = [];
             const cursor = new Date(start);
             while (cursor <= end) {
-                dates.push(cursor.toISOString().split('T')[0]);
+                dates.push(toLocalDateStr(cursor));
                 cursor.setDate(cursor.getDate() + 1);
             }
             return dates;
@@ -2810,7 +2820,7 @@
 
         function addEditMilestone() {
             if (!_editBuffer) return;
-            const lastDate = _editBuffer.length > 0 ? _editBuffer[_editBuffer.length - 1].date : new Date().toISOString().split('T')[0];
+            const lastDate = _editBuffer.length > 0 ? _editBuffer[_editBuffer.length - 1].date : toLocalDateStr(new Date());
             _editBuffer.push({ label: '', completed: false, date: lastDate });
             renderEditMilestonesList(_editBuffer);
             // Focus the new input
@@ -2896,7 +2906,7 @@
                 const pct = totalMs > 0 ? Math.round((doneMs / totalMs) * 100) : 0;
 
                 const dateLabel = formatGoalDate(date);
-                const todayStr = new Date().toISOString().split('T')[0];
+                const todayStr = toLocalDateStr(new Date());
                 const isPast = date < todayStr;
                 const isToday = date === todayStr;
 
@@ -2999,11 +3009,11 @@
         function formatGoalDate(dateStr) {
             const [y, m, d] = dateStr.split('-').map(Number);
             const date = new Date(y, m - 1, d);
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = toLocalDateStr(new Date());
             if (dateStr === todayStr) return 'Today';
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
-            if (dateStr === tomorrow.toISOString().split('T')[0]) return 'Tomorrow';
+            if (dateStr === toLocalDateStr(tomorrow)) return 'Tomorrow';
             return date.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
         }
 
