@@ -844,28 +844,6 @@
         </div>
     </div>
 
-    <!-- Goals Edit Modal -->
-    <div class="goals-modal-overlay" id="goals-edit-modal-overlay">
-        <div class="goals-modal-content">
-            <h2>Edit Goal</h2>
-
-            <div class="form-group">
-                <label>Book</label>
-                <select id="edit-goal-book-select"></select>
-            </div>
-
-            <div class="form-group">
-                <label>Milestones (each with its own date)</label>
-                <div id="edit-goal-milestones-list" style="display:flex; flex-direction:column; gap:6px; max-height:280px; overflow-y:auto; padding:4px 0;"></div>
-                <button onclick="addEditMilestone()" style="margin-top:10px; padding:7px 14px; font-size:13px; background:#f0ede4; color:var(--text-color); border:1px solid var(--border-color); border-radius:6px; cursor:pointer; box-shadow:none;">+ Add Milestone</button>
-            </div>
-
-            <div class="goals-modal-buttons">
-                <button class="btn-cancel" onclick="closeEditGoalModal()">Cancel</button>
-                <button class="btn-save" onclick="saveEditGoal()">Save</button>
-            </div>
-        </div>
-    </div>
     <!-- ============ END GOALS MODE PANEL ============ -->
 
     <div class="filter-section">
@@ -1653,7 +1631,8 @@
                 games: gameList,
                 readingBooks: readingBooksList,
                 readingMovies: readingMoviesList,
-                playingGames: playingGamesList
+                playingGames: playingGamesList,
+                goals: goalsData
             };
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(combined));
             const downloadAnchorNode = document.createElement('a');
@@ -1671,6 +1650,7 @@
             localStorage.setItem(storageKeys.reading_books, JSON.stringify(readingBooksList));
             localStorage.setItem(storageKeys.reading_movies, JSON.stringify(readingMoviesList));
             localStorage.setItem(storageKeys.reading_games, JSON.stringify(playingGamesList));
+            localStorage.setItem(GOALS_STORAGE_KEY, JSON.stringify(goalsData));
         }
 
         function importData(event) {
@@ -1680,7 +1660,7 @@
             reader.onload = function(e) {
                 try {
                     const parsed = JSON.parse(e.target.result);
-                    const keys = ['books', 'movies', 'games', 'readingBooks', 'readingMovies', 'playingGames'];
+                    const keys = ['books', 'movies', 'games', 'readingBooks', 'readingMovies', 'playingGames', 'goals'];
                     if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && keys.some(k => k in parsed)) {
                         tbrList = Array.isArray(parsed.books) ? parsed.books : [];
                         movieList = Array.isArray(parsed.movies) ? parsed.movies : [];
@@ -1688,7 +1668,11 @@
                         readingBooksList = Array.isArray(parsed.readingBooks) ? parsed.readingBooks : [];
                         readingMoviesList = Array.isArray(parsed.readingMovies) ? parsed.readingMovies : [];
                         playingGamesList = Array.isArray(parsed.playingGames) ? parsed.playingGames : [];
+                        // Older exports won't have a "goals" key — keep existing goals in that case
+                        // rather than wiping them out on import.
+                        if (Array.isArray(parsed.goals)) goalsData = parsed.goals;
                         saveAllToStorage();
+                        renderGoals();
                     } else {
                         setActiveList(parsed);
                         saveToStorage();
@@ -2628,6 +2612,7 @@
 
         function closeGoalModal() {
             document.getElementById('goals-modal-overlay').classList.remove('active');
+            editingGoalId = null;
         }
 
         function setGoalType(type) {
@@ -2743,119 +2728,98 @@
             const dateRange = buildDateRange(fromDate, toDate);
             distributeMilestonesAcrossDates(milestones, dateRange);
 
-            const goal = {
-                id: Date.now(),
-                bookTitle,
-                type: goalType,
-                milestones
-            };
+            if (editingGoalId !== null) {
+                // ---- Editing an existing goal: regenerate milestones from the
+                // range, but carry over "completed" for any label that matches
+                // one that was already checked off before.
+                const goalIdx = goalsData.findIndex(g => g.id === editingGoalId);
+                if (goalIdx === -1) return;
 
-            goalsData.push(goal);
+                const remainingCompletedCounts = {};
+                goalsData[goalIdx].milestones.forEach(m => {
+                    if (m.completed) remainingCompletedCounts[m.label] = (remainingCompletedCounts[m.label] || 0) + 1;
+                });
+                milestones.forEach(m => {
+                    if (remainingCompletedCounts[m.label] > 0) {
+                        m.completed = true;
+                        remainingCompletedCounts[m.label]--;
+                    }
+                });
+
+                goalsData[goalIdx].bookTitle = bookTitle;
+                goalsData[goalIdx].type = goalType;
+                goalsData[goalIdx].milestones = milestones;
+            } else {
+                // ---- Adding a new goal
+                const goal = {
+                    id: Date.now(),
+                    bookTitle,
+                    type: goalType,
+                    milestones
+                };
+                goalsData.push(goal);
+            }
+
             saveGoals();
             closeGoalModal();
             renderGoals();
         }
 
-        // ---- Edit Goal Modal ----
-
-        // We store edits in a temp buffer to allow cancel without side-effects
-        let _editBuffer = null;
-
-        function closeEditGoalModal() {
-            document.getElementById('goals-edit-modal-overlay').classList.remove('active');
-            editingGoalId = null;
-            _editBuffer = null;
-        }
-
-        function renderEditMilestonesList(milestones) {
-            const container = document.getElementById('edit-goal-milestones-list');
-            container.innerHTML = '';
-            milestones.forEach((ms, idx) => {
-                const row = document.createElement('div');
-                row.style.cssText = 'display:flex; align-items:center; gap:8px;';
-                row.innerHTML = `
-                    <input type="checkbox" style="width:16px;height:16px;accent-color:var(--primary-color);flex-shrink:0;" ${ms.completed ? 'checked' : ''}
-                        onchange="updateEditMilestoneCompletion(${idx}, this.checked)">
-                    <input type="date" value="${ms.date || ''}" data-ms-date-idx="${idx}"
-                        style="width:140px; height:34px; padding:6px 8px; font-size:12px; background:#fcfcf9; border:1px solid var(--border-color); border-radius:6px; color:var(--text-color); box-sizing:border-box; flex-shrink:0;"
-                        onchange="updateEditMilestoneDate(${idx}, this.value)">
-                    <input type="text" value="${escapeHtml(ms.label)}" data-ms-idx="${idx}"
-                        style="flex:1; height:34px; padding:6px 8px; font-size:13px; background:#fcfcf9; border:1px solid var(--border-color); border-radius:6px; color:var(--text-color); box-sizing:border-box;"
-                        oninput="updateEditMilestoneLabel(${idx}, this.value)">
-                    <button onclick="removeEditMilestone(${idx})" style="background:none;border:none;color:#ccc;font-size:16px;cursor:pointer;padding:4px;margin:0;box-shadow:none;flex-shrink:0;border-radius:4px;" title="Remove">✕</button>
-                `;
-                container.appendChild(row);
-            });
-        }
+        // ---- Edit Goal (reuses the Add Goal modal, pre-filled) ----
 
         function openEditGoalModal(goalId) {
             const goal = goalsData.find(g => g.id === goalId);
             if (!goal) return;
             editingGoalId = goalId;
-            // Deep-copy milestones into buffer
-            _editBuffer = goal.milestones.map(m => ({ ...m }));
 
-            populateBookSelect('edit-goal-book-select', goal.bookTitle);
-            renderEditMilestonesList(_editBuffer);
-            document.getElementById('goals-edit-modal-overlay').classList.add('active');
-        }
+            document.getElementById('goals-modal-title').textContent = 'Edit Reading Goal';
+            document.getElementById('goals-modal-save-btn').textContent = 'Save Changes';
+            document.getElementById('goals-modal-save-btn').onclick = saveGoal;
 
-        function updateEditMilestoneLabel(idx, val) {
-            if (_editBuffer) _editBuffer[idx].label = val;
-        }
+            populateBookSelect('goal-book-select', goal.bookTitle);
 
-        function updateEditMilestoneCompletion(idx, checked) {
-            if (_editBuffer) _editBuffer[idx].completed = checked;
-        }
+            // Infer the date range from the existing milestones' dates
+            const dates = goal.milestones.map(m => m.date).filter(Boolean).sort();
+            const todayStr = toLocalDateStr(new Date());
+            const fromDate = dates.length ? dates[0] : todayStr;
+            const toDate = dates.length ? dates[dates.length - 1] : todayStr;
+            document.getElementById('goal-date-from-input').value = fromDate;
+            document.getElementById('goal-date-to-input').value = toDate;
 
-        function updateEditMilestoneDate(idx, val) {
-            if (_editBuffer) _editBuffer[idx].date = val;
-        }
+            setGoalType(goal.type);
 
-        function removeEditMilestone(idx) {
-            if (!_editBuffer) return;
-            _editBuffer.splice(idx, 1);
-            renderEditMilestonesList(_editBuffer);
-        }
+            if (goal.type === 'percentage') {
+                const pcts = goal.milestones.map(m => parseInt(m.label)).filter(n => !isNaN(n));
+                const minPct = pcts.length ? Math.min(...pcts) : 5;
+                const maxPct = pcts.length ? Math.max(...pcts) : 100;
+                // The "From" field isn't itself a milestone, so best guess is
+                // 5 below the lowest existing milestone (floored at 0).
+                document.getElementById('goal-pct-from').value = Math.max(0, minPct - 5);
+                document.getElementById('goal-pct-to').value = maxPct;
+                setChapterMode('numeric');
+                document.getElementById('goal-ch-from').value = '';
+                document.getElementById('goal-ch-to').value = '';
+                document.getElementById('goal-ch-names').value = '';
+            } else {
+                const chapterNumRegex = /^Chapter (\d+)$/;
+                const allNumeric = goal.milestones.length > 0 && goal.milestones.every(m => chapterNumRegex.test(m.label));
+                document.getElementById('goal-pct-from').value = '0';
+                document.getElementById('goal-pct-to').value = '100';
+                if (allNumeric) {
+                    const nums = goal.milestones.map(m => parseInt(m.label.match(chapterNumRegex)[1]));
+                    setChapterMode('numeric');
+                    document.getElementById('goal-ch-from').value = Math.min(...nums);
+                    document.getElementById('goal-ch-to').value = Math.max(...nums);
+                    document.getElementById('goal-ch-names').value = '';
+                } else {
+                    setChapterMode('text');
+                    document.getElementById('goal-ch-from').value = '';
+                    document.getElementById('goal-ch-to').value = '';
+                    document.getElementById('goal-ch-names').value = goal.milestones.map(m => m.label).join('\n');
+                }
+            }
 
-        function addEditMilestone() {
-            if (!_editBuffer) return;
-            const lastDate = _editBuffer.length > 0 ? _editBuffer[_editBuffer.length - 1].date : toLocalDateStr(new Date());
-            _editBuffer.push({ label: '', completed: false, date: lastDate });
-            renderEditMilestonesList(_editBuffer);
-            // Focus the new input
-            const rows = document.querySelectorAll('#edit-goal-milestones-list input[type="text"]');
-            if (rows.length > 0) rows[rows.length - 1].focus();
-        }
-
-        function saveEditGoal() {
-            if (editingGoalId === null) return;
-            const goalIdx = goalsData.findIndex(g => g.id === editingGoalId);
-            if (goalIdx === -1) return;
-
-            const newBook = document.getElementById('edit-goal-book-select').value;
-            if (!newBook) return alert('Please select a book.');
-
-            // Collect labels and dates from actual inputs (in case user typed without triggering the change events)
-            const labelInputs = document.querySelectorAll('#edit-goal-milestones-list input[type="text"]');
-            labelInputs.forEach((inp, idx) => {
-                if (_editBuffer[idx] !== undefined) _editBuffer[idx].label = inp.value.trim();
-            });
-            const dateInputs = document.querySelectorAll('#edit-goal-milestones-list input[type="date"]');
-            dateInputs.forEach((inp, idx) => {
-                if (_editBuffer[idx] !== undefined) _editBuffer[idx].date = inp.value;
-            });
-
-            const filteredMs = (_editBuffer || []).filter(m => m.label.trim() !== '');
-            if (filteredMs.length === 0) return alert('Please keep at least one milestone (with a label).');
-            if (filteredMs.some(m => !m.date)) return alert('Please set a date for every milestone.');
-
-            goalsData[goalIdx].bookTitle = newBook;
-            goalsData[goalIdx].milestones = filteredMs;
-
-            saveGoals();
-            closeEditGoalModal();
-            renderGoals();
+            document.getElementById('goals-modal-overlay').classList.add('active');
         }
 
         // ---- Rendering ----
