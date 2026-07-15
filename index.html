@@ -485,6 +485,33 @@
 
     .goals-add-btn:hover { opacity: 0.9; transform: scale(1.02); }
 
+    .goals-top-bar-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .goals-undo-btn {
+        background-color: rgba(255,255,255,0.15);
+        color: #ffffff;
+        border: 1px solid rgba(255,255,255,0.4);
+        padding: 10px 18px;
+        font-size: 14px;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+        margin: 0;
+        transition: all 0.2s ease;
+    }
+
+    .goals-undo-btn:hover:not(:disabled) { opacity: 0.85; transform: scale(1.02); }
+
+    .goals-undo-btn:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+        transform: none;
+    }
+
     .goals-date-group {
         background-color: var(--surface-color);
         border-radius: 16px;
@@ -765,7 +792,10 @@
     <div id="goals-mode-panel">
         <div class="goals-top-bar">
             <h2>🎯 Reading Goals</h2>
-            <button class="goals-add-btn" onclick="openGoalModal()">+ Add Goal</button>
+            <div class="goals-top-bar-actions">
+                <button class="goals-undo-btn" id="goals-undo-btn" onclick="undoGoalsAction()" disabled title="Undo the last add, edit, or remove">↩ Undo</button>
+                <button class="goals-add-btn" onclick="openGoalModal()">+ Add Goal</button>
+            </div>
         </div>
         <div id="goals-content" style="width:100%;"></div>
     </div>
@@ -2489,6 +2519,10 @@
         let chapterMode = 'numeric'; // 'numeric' or 'text'
         let editingGoalId = null;
 
+        // Stack of previous goalsData snapshots, used to undo add/edit/remove actions.
+        let goalsUndoStack = [];
+        const GOALS_UNDO_LIMIT = 20;
+
         const GOALS_BACKGROUNDS = [
             'https://media.houseandgarden.co.uk/photos/6893320d7a7e18d716cf83aa/master/w_1280,c_limit/Shot-10-187_RT_LR.jpg',
             'https://www.marthastewart.com/thmb/Illh5OkaMq__Lv9xsKx0b1tOEeg=/750x0/filters:no_upscale():max_bytes(150000):strip_icc()/home-library-getty-0623-bcc1b324350d4c59807fa46b4ccec264.jpg',
@@ -2523,6 +2557,30 @@
 
         function saveGoals() {
             localStorage.setItem(GOALS_STORAGE_KEY, JSON.stringify(goalsData));
+        }
+
+        // ---- Undo (add / edit / remove goal) ----
+
+        // Call this right before any add/edit/remove mutation to snapshot
+        // the pre-mutation state onto the undo stack.
+        function pushGoalsUndoState() {
+            goalsUndoStack.push(JSON.stringify(goalsData));
+            if (goalsUndoStack.length > GOALS_UNDO_LIMIT) goalsUndoStack.shift();
+            updateGoalsUndoButton();
+        }
+
+        function updateGoalsUndoButton() {
+            const btn = document.getElementById('goals-undo-btn');
+            if (btn) btn.disabled = goalsUndoStack.length === 0;
+        }
+
+        function undoGoalsAction() {
+            if (goalsUndoStack.length === 0) return;
+            const prevState = goalsUndoStack.pop();
+            try { goalsData = JSON.parse(prevState); } catch(e) { return; }
+            saveGoals();
+            renderGoals();
+            updateGoalsUndoButton();
         }
 
         function toggleGoalsMode() {
@@ -2728,6 +2786,8 @@
             const dateRange = buildDateRange(fromDate, toDate);
             distributeMilestonesAcrossDates(milestones, dateRange);
 
+            pushGoalsUndoState();
+
             if (editingGoalId !== null) {
                 // ---- Editing an existing goal: regenerate milestones from the
                 // range, but carry over "completed" for any label that matches
@@ -2825,6 +2885,7 @@
         // ---- Rendering ----
 
         function renderGoals() {
+            updateGoalsUndoButton();
             const container = document.getElementById('goals-content');
             container.innerHTML = '';
 
@@ -2948,6 +3009,7 @@
         function deleteMilestone(goalId, msIdx) {
             const goalIdx = goalsData.findIndex(g => g.id === goalId);
             if (goalIdx === -1) return;
+            pushGoalsUndoState();
             goalsData[goalIdx].milestones.splice(msIdx, 1);
             if (goalsData[goalIdx].milestones.length === 0) goalsData.splice(goalIdx, 1);
             saveGoals();
@@ -2955,6 +3017,7 @@
         }
 
         function deleteGoal(goalId) {
+            pushGoalsUndoState();
             goalsData = goalsData.filter(g => g.id !== goalId);
             saveGoals();
             renderGoals();
@@ -2963,6 +3026,7 @@
         function deleteGoalForDate(goalId, date) {
             const goalIdx = goalsData.findIndex(g => g.id === goalId);
             if (goalIdx === -1) return;
+            pushGoalsUndoState();
             const goal = goalsData[goalIdx];
             goal.milestones = goal.milestones.filter(ms => (ms.date || goal.date) !== date);
             if (goal.milestones.length === 0) goalsData.splice(goalIdx, 1);
