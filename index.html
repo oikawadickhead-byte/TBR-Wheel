@@ -825,6 +825,7 @@
                 <div class="goal-type-toggle">
                     <button id="goal-type-pct-btn" class="active" onclick="setGoalType('percentage')">📊 Percentage</button>
                     <button id="goal-type-ch-btn" onclick="setGoalType('chapter')">📖 By Chapter</button>
+                    <button id="goal-type-pg-btn" onclick="setGoalType('page')">📄 By Page</button>
                 </div>
             </div>
 
@@ -864,6 +865,26 @@
                 <div id="goal-ch-text" class="form-group" style="display:none;">
                     <label>Chapter names (one per line)</label>
                     <textarea id="goal-ch-names" placeholder="e.g.&#10;Prologue&#10;The Beginning&#10;Into the Dark&#10;Epilogue" rows="5" style="width:100%; box-sizing:border-box; background:#fcfcf9; border:1px solid var(--border-color); border-radius:6px; padding:10px; font-size:13px; color:var(--text-color); resize:vertical; font-family:inherit;"></textarea>
+                </div>
+            </div>
+
+            <!-- Page fields -->
+            <div id="goal-page-fields" style="display:none;">
+                <div class="form-group">
+                    <label>Jump size</label>
+                    <div class="goal-type-toggle" style="margin-bottom:10px;">
+                        <button id="goal-pg-jump-5-btn" class="active" onclick="setPageMode(5)">Every 5 pages</button>
+                        <button id="goal-pg-jump-10-btn" onclick="setPageMode(10)">Every 10 pages</button>
+                    </div>
+                </div>
+                <div class="form-group" style="display:flex; flex-direction:column; gap:6px;">
+                    <label>Page range (milestones every <span id="goal-pg-jump-label">5</span> pages, last one snapped to end)</label>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <label style="font-size:13px; color:var(--text-color); text-transform:none; letter-spacing:0; font-weight:normal; white-space:nowrap;">From p.</label>
+                        <input type="number" id="goal-pg-from" placeholder="e.g. 0" min="0" style="flex:1; height:38px; font-size:13px; padding:6px; box-sizing:border-box; background:#fcfcf9; border:1px solid var(--border-color); border-radius:6px; color:var(--text-color);" oninput="enforceMin(event)">
+                        <label style="font-size:13px; color:var(--text-color); text-transform:none; letter-spacing:0; font-weight:normal; white-space:nowrap;">To p.</label>
+                        <input type="number" id="goal-pg-to" placeholder="e.g. 300" min="1" style="flex:1; height:38px; font-size:13px; padding:6px; box-sizing:border-box; background:#fcfcf9; border:1px solid var(--border-color); border-radius:6px; color:var(--text-color);" oninput="enforceMin(event)">
+                    </div>
                 </div>
             </div>
 
@@ -2517,6 +2538,7 @@
         let goalsMode = false;
         let goalType = 'percentage';
         let chapterMode = 'numeric'; // 'numeric' or 'text'
+        let pageJump = 5; // 5 or 10
         let editingGoalId = null;
 
         // Stack of previous goalsData snapshots, used to undo add/edit/remove actions.
@@ -2660,11 +2682,14 @@
             document.getElementById('goal-date-to-input').value = todayStr;
             setGoalType('percentage');
             setChapterMode('numeric');
+            setPageMode(5);
             document.getElementById('goal-pct-from').value = '0';
             document.getElementById('goal-pct-to').value = '100';
             document.getElementById('goal-ch-from').value = '';
             document.getElementById('goal-ch-to').value = '';
             document.getElementById('goal-ch-names').value = '';
+            document.getElementById('goal-pg-from').value = '0';
+            document.getElementById('goal-pg-to').value = '';
             document.getElementById('goals-modal-overlay').classList.add('active');
         }
 
@@ -2677,8 +2702,17 @@
             goalType = type;
             document.getElementById('goal-type-pct-btn').classList.toggle('active', type === 'percentage');
             document.getElementById('goal-type-ch-btn').classList.toggle('active', type === 'chapter');
+            document.getElementById('goal-type-pg-btn').classList.toggle('active', type === 'page');
             document.getElementById('goal-percentage-fields').style.display = type === 'percentage' ? 'block' : 'none';
             document.getElementById('goal-chapter-fields').style.display = type === 'chapter' ? 'block' : 'none';
+            document.getElementById('goal-page-fields').style.display = type === 'page' ? 'block' : 'none';
+        }
+
+        function setPageMode(jump) {
+            pageJump = jump;
+            document.getElementById('goal-pg-jump-5-btn').classList.toggle('active', jump === 5);
+            document.getElementById('goal-pg-jump-10-btn').classList.toggle('active', jump === 10);
+            document.getElementById('goal-pg-jump-label').textContent = jump;
         }
 
         function setChapterMode(mode) {
@@ -2699,6 +2733,20 @@
             // If 'to' is not a multiple of 5, add a final milestone at 'to'
             if (to % 5 !== 0 && to > from) {
                 milestones.push({ label: to + '%', completed: false });
+            }
+            return milestones;
+        }
+
+        function buildPageMilestones(from, to, jump) {
+            const milestones = [];
+            // Every `jump` pages from (from + jump) up to the last full step ≤ to
+            const lastFull = Math.floor(to / jump) * jump;
+            for (let p = from + jump; p <= lastFull && p <= to; p += jump) {
+                milestones.push({ label: 'Page ' + p, completed: false });
+            }
+            // If 'to' is not a multiple of jump, snap a final milestone to 'to'
+            if (to % jump !== 0 && to > from) {
+                milestones.push({ label: 'Page ' + to, completed: false });
             }
             return milestones;
         }
@@ -2767,6 +2815,14 @@
                 if (from < 0 || to > 100) return alert('Percentages must be between 0 and 100.');
                 milestones = buildPctMilestones(from, to);
                 if (milestones.length === 0) return alert('Range too small — need at least 1% difference.');
+            } else if (goalType === 'page') {
+                const pgFrom = parseInt(document.getElementById('goal-pg-from').value);
+                const pgTo = parseInt(document.getElementById('goal-pg-to').value);
+                if (isNaN(pgFrom) || isNaN(pgTo)) return alert('Please enter a valid page range.');
+                if (pgTo <= pgFrom) return alert('"To" page must be greater than "From" page.');
+                if (pgFrom < 0) return alert('"From" page must be 0 or greater.');
+                milestones = buildPageMilestones(pgFrom, pgTo, pageJump);
+                if (milestones.length === 0) return alert('Range too small — need at least ' + pageJump + ' pages difference.');
             } else {
                 if (chapterMode === 'numeric') {
                     const chFrom = parseInt(document.getElementById('goal-ch-from').value);
@@ -2857,6 +2913,33 @@
                 document.getElementById('goal-pct-from').value = Math.max(0, minPct - 5);
                 document.getElementById('goal-pct-to').value = maxPct;
                 setChapterMode('numeric');
+                setPageMode(5);
+                document.getElementById('goal-ch-from').value = '';
+                document.getElementById('goal-ch-to').value = '';
+                document.getElementById('goal-ch-names').value = '';
+                document.getElementById('goal-pg-from').value = '0';
+                document.getElementById('goal-pg-to').value = '';
+            } else if (goal.type === 'page') {
+                const pageNumRegex = /^Page (\d+)$/;
+                const pageNums = goal.milestones.map(m => {
+                    const match = m.label.match(pageNumRegex);
+                    return match ? parseInt(match[1]) : NaN;
+                }).filter(n => !isNaN(n));
+                const minPage = pageNums.length ? Math.min(...pageNums) : 0;
+                const maxPage = pageNums.length ? Math.max(...pageNums) : 0;
+                // Infer jump from spacing between milestones
+                let inferredJump = 5;
+                if (pageNums.length >= 2) {
+                    const sorted = [...pageNums].sort((a, b) => a - b);
+                    const gap = sorted[1] - sorted[0];
+                    if (gap === 10) inferredJump = 10;
+                }
+                setPageMode(inferredJump);
+                document.getElementById('goal-pg-from').value = Math.max(0, minPage - inferredJump);
+                document.getElementById('goal-pg-to').value = maxPage;
+                setChapterMode('numeric');
+                document.getElementById('goal-pct-from').value = '0';
+                document.getElementById('goal-pct-to').value = '100';
                 document.getElementById('goal-ch-from').value = '';
                 document.getElementById('goal-ch-to').value = '';
                 document.getElementById('goal-ch-names').value = '';
@@ -2865,6 +2948,9 @@
                 const allNumeric = goal.milestones.length > 0 && goal.milestones.every(m => chapterNumRegex.test(m.label));
                 document.getElementById('goal-pct-from').value = '0';
                 document.getElementById('goal-pct-to').value = '100';
+                document.getElementById('goal-pg-from').value = '0';
+                document.getElementById('goal-pg-to').value = '';
+                setPageMode(5);
                 if (allNumeric) {
                     const nums = goal.milestones.map(m => parseInt(m.label.match(chapterNumRegex)[1]));
                     setChapterMode('numeric');
@@ -2957,7 +3043,7 @@
                     goalHeader.style.cssText = 'display:flex; align-items:center; justify-content:space-between; padding:6px 14px 4px; margin-top:8px;';
                     goalHeader.innerHTML = `
                         <span style="font-size:12px; font-weight:bold; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">
-                            ${goal.type === 'percentage' ? '📊' : '📖'} ${escapeHtml(goal.bookTitle)}
+                            ${goal.type === 'percentage' ? '📊' : goal.type === 'page' ? '📄' : '📖'} ${escapeHtml(goal.bookTitle)}
                         </span>
                         <span style="display:flex; gap:6px;">
                             <button onclick="openEditGoalModal(${goal.id})" style="background:var(--edit-color);color:#3b4052;padding:4px 10px;font-size:11px;margin:0;border-radius:5px;border:none;cursor:pointer;box-shadow:none;">Edit</button>
