@@ -823,7 +823,7 @@
             <div class="form-group">
                 <label>Goal Type</label>
                 <div class="goal-type-toggle">
-                    <button id="goal-type-pct-btn" class="active" onclick="setGoalType('percentage')">📊 Percentage</button>
+                    <button id="goal-type-pct-btn" class="active" onclick="setGoalType('percentage')">📊 By Percentage</button>
                     <button id="goal-type-ch-btn" onclick="setGoalType('chapter')">📖 By Chapter</button>
                     <button id="goal-type-pg-btn" onclick="setGoalType('page')">📄 By Page</button>
                 </div>
@@ -832,7 +832,7 @@
             <!-- Percentage fields: manual entry -->
             <div id="goal-percentage-fields">
                 <div class="form-group">
-                    <label>Percentage range (milestones every 5%, last one snapped to end)</label>
+                    <label>Percentage range</label>
                     <div style="display:flex; gap:10px; align-items:center;">
                         <label style="font-size:13px; color:var(--text-color); text-transform:none; letter-spacing:0; font-weight:normal; white-space:nowrap;">From %</label>
                         <input type="number" id="goal-pct-from" placeholder="e.g. 0" min="0" max="99" style="flex:1; height:38px; font-size:13px; padding:6px; box-sizing:border-box; background:#fcfcf9; border:1px solid var(--border-color); border-radius:6px; color:var(--text-color);" oninput="enforceMin(event)">
@@ -878,7 +878,7 @@
                     </div>
                 </div>
                 <div class="form-group" style="display:flex; flex-direction:column; gap:6px;">
-                    <label>Page range (milestones every <span id="goal-pg-jump-label">5</span> pages, last one snapped to end)</label>
+                    <label>Page range</label>
                     <div style="display:flex; gap:10px; align-items:center;">
                         <label style="font-size:13px; color:var(--text-color); text-transform:none; letter-spacing:0; font-weight:normal; white-space:nowrap;">From p.</label>
                         <input type="number" id="goal-pg-from" placeholder="e.g. 0" min="0" style="flex:1; height:38px; font-size:13px; padding:6px; box-sizing:border-box; background:#fcfcf9; border:1px solid var(--border-color); border-radius:6px; color:var(--text-color);" oninput="enforceMin(event)">
@@ -1685,13 +1685,15 @@
                 playingGames: playingGamesList,
                 goals: goalsData
             };
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(combined));
+            const blob = new Blob([JSON.stringify(combined, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
             const downloadAnchorNode = document.createElement('a');
-            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("href", url);
             downloadAnchorNode.setAttribute("download", "roulette_save.json");
             document.body.appendChild(downloadAnchorNode);
             downloadAnchorNode.click();
             downloadAnchorNode.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
 
         function saveAllToStorage() {
@@ -1767,13 +1769,15 @@
                 section('Currently Watching', readingMoviesList, 'movies', true),
                 section('Currently Playing', playingGamesList, 'games', true)
             ].join('\n\n\n');
-            const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(content);
+            const blob = new Blob([content], { type: "text/plain" });
+            const url = URL.createObjectURL(blob);
             const downloadAnchorNode = document.createElement('a');
-            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("href", url);
             downloadAnchorNode.setAttribute("download", "roulette_export.txt");
             document.body.appendChild(downloadAnchorNode);
             downloadAnchorNode.click();
             downloadAnchorNode.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
 
         function updateSortOptions() {
@@ -2712,7 +2716,6 @@
             pageJump = jump;
             document.getElementById('goal-pg-jump-5-btn').classList.toggle('active', jump === 5);
             document.getElementById('goal-pg-jump-10-btn').classList.toggle('active', jump === 10);
-            document.getElementById('goal-pg-jump-label').textContent = jump;
         }
 
         function setChapterMode(mode) {
