@@ -2728,28 +2728,32 @@
 
         function buildPctMilestones(from, to) {
             const milestones = [];
-            // Every 5% step from (from+5) up to the last full-5 step ≤ to
+            let start = from + 1;
+            // Every 5% step, snapped down to the last full-5 boundary ≤ to
             const lastFull = Math.floor(to / 5) * 5;
-            for (let p = from + 5; p <= lastFull && p <= to; p += 5) {
-                milestones.push({ label: p + '%', completed: false });
+            for (let end = Math.min(from + 5, lastFull); end >= start && end <= lastFull && start <= to; end += 5) {
+                milestones.push({ label: `Percentage ${start}-${end}%`, completed: false });
+                start = end + 1;
             }
-            // If 'to' is not a multiple of 5, add a final milestone at 'to'
-            if (to % 5 !== 0 && to > from) {
-                milestones.push({ label: to + '%', completed: false });
+            // If 'to' isn't a multiple of 5, snap a final range to 'to'
+            if (start <= to) {
+                milestones.push({ label: `Percentage ${start}-${to}%`, completed: false });
             }
             return milestones;
         }
 
         function buildPageMilestones(from, to, jump) {
             const milestones = [];
-            // Every `jump` pages from (from + jump) up to the last full step ≤ to
+            let start = from + 1;
+            // Every `jump`-page step, snapped down to the last full boundary ≤ to
             const lastFull = Math.floor(to / jump) * jump;
-            for (let p = from + jump; p <= lastFull && p <= to; p += jump) {
-                milestones.push({ label: 'Page ' + p, completed: false });
+            for (let end = Math.min(from + jump, lastFull); end >= start && end <= lastFull && start <= to; end += jump) {
+                milestones.push({ label: `Page ${start}-${end}`, completed: false });
+                start = end + 1;
             }
-            // If 'to' is not a multiple of jump, snap a final milestone to 'to'
-            if (to % jump !== 0 && to > from) {
-                milestones.push({ label: 'Page ' + to, completed: false });
+            // If 'to' isn't a multiple of jump, snap a final range to 'to'
+            if (start <= to) {
+                milestones.push({ label: `Page ${start}-${to}`, completed: false });
             }
             return milestones;
         }
