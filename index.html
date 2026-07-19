@@ -2912,13 +2912,18 @@
             setGoalType(goal.type);
 
             if (goal.type === 'percentage') {
-                const pcts = goal.milestones.map(m => parseInt(m.label)).filter(n => !isNaN(n));
-                const minPct = pcts.length ? Math.min(...pcts) : 5;
-                const maxPct = pcts.length ? Math.max(...pcts) : 100;
-                // The "From" field isn't itself a milestone, so best guess is
-                // 5 below the lowest existing milestone (floored at 0).
-                document.getElementById('goal-pct-from').value = Math.max(0, minPct - 5);
-                document.getElementById('goal-pct-to').value = maxPct;
+                const pctRangeRegex = /^Percentage (\d+)-(\d+)%$/;
+                const starts = [], ends = [];
+                goal.milestones.forEach(m => {
+                    const match = m.label.match(pctRangeRegex);
+                    if (match) { starts.push(parseInt(match[1])); ends.push(parseInt(match[2])); }
+                });
+                const minStart = starts.length ? Math.min(...starts) : 1;
+                const maxEnd = ends.length ? Math.max(...ends) : 100;
+                // The "From" field isn't itself a milestone; it's one less than
+                // the lowest range's start.
+                document.getElementById('goal-pct-from').value = Math.max(0, minStart - 1);
+                document.getElementById('goal-pct-to').value = maxEnd;
                 setChapterMode('numeric');
                 setPageMode(5);
                 document.getElementById('goal-ch-from').value = '';
@@ -2927,23 +2932,24 @@
                 document.getElementById('goal-pg-from').value = '0';
                 document.getElementById('goal-pg-to').value = '';
             } else if (goal.type === 'page') {
-                const pageNumRegex = /^Page (\d+)$/;
-                const pageNums = goal.milestones.map(m => {
-                    const match = m.label.match(pageNumRegex);
-                    return match ? parseInt(match[1]) : NaN;
-                }).filter(n => !isNaN(n));
-                const minPage = pageNums.length ? Math.min(...pageNums) : 0;
-                const maxPage = pageNums.length ? Math.max(...pageNums) : 0;
-                // Infer jump from spacing between milestones
+                const pageRangeRegex = /^Page (\d+)-(\d+)$/;
+                const starts = [], ends = [];
+                goal.milestones.forEach(m => {
+                    const match = m.label.match(pageRangeRegex);
+                    if (match) { starts.push(parseInt(match[1])); ends.push(parseInt(match[2])); }
+                });
+                const minStart = starts.length ? Math.min(...starts) : 1;
+                const maxEnd = ends.length ? Math.max(...ends) : 0;
+                // Infer jump from the width of the first range (last range may be
+                // shorter since it's snapped to the end).
                 let inferredJump = 5;
-                if (pageNums.length >= 2) {
-                    const sorted = [...pageNums].sort((a, b) => a - b);
-                    const gap = sorted[1] - sorted[0];
-                    if (gap === 10) inferredJump = 10;
+                if (starts.length >= 1) {
+                    const width = ends[0] - starts[0] + 1;
+                    if (width === 10) inferredJump = 10;
                 }
                 setPageMode(inferredJump);
-                document.getElementById('goal-pg-from').value = Math.max(0, minPage - inferredJump);
-                document.getElementById('goal-pg-to').value = maxPage;
+                document.getElementById('goal-pg-from').value = Math.max(0, minStart - 1);
+                document.getElementById('goal-pg-to').value = maxEnd;
                 setChapterMode('numeric');
                 document.getElementById('goal-pct-from').value = '0';
                 document.getElementById('goal-pct-to').value = '100';
@@ -3034,9 +3040,12 @@
                             ${isPast && !isToday ? '⏰' : isToday ? '📅' : '📆'}
                             <span class="date-badge">${dateLabel}</span>
                         </div>
-                        <div class="goals-date-progress-wrap">
-                            <div class="goals-date-progress">${doneMs} / ${totalMs} done (${pct}%)</div>
-                            <div class="goals-progress-bar-wrap"><div class="goals-progress-bar-fill" style="width:${pct}%"></div></div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div class="goals-date-progress-wrap">
+                                <div class="goals-date-progress">${doneMs} / ${totalMs} done (${pct}%)</div>
+                                <div class="goals-progress-bar-wrap"><div class="goals-progress-bar-fill" style="width:${pct}%"></div></div>
+                            </div>
+                            <button onclick="deleteEntireDay('${date}')" ${pct === 100 ? '' : 'disabled'} title="${pct === 100 ? 'Delete this entire day' : 'Complete all goals for this day to enable'}" style="background:${pct === 100 ? 'var(--danger-color)' : '#ddd'};color:${pct === 100 ? '#5e3a3a' : '#999'};padding:5px 12px;font-size:11px;margin:0;border-radius:5px;border:none;cursor:${pct === 100 ? 'pointer' : 'not-allowed'};box-shadow:none;opacity:${pct === 100 ? '1' : '0.6'};white-space:nowrap;">Delete Day</button>
                         </div>
                     </div>
                     <div class="goals-items-list"></div>
@@ -3123,6 +3132,16 @@
             const goal = goalsData[goalIdx];
             goal.milestones = goal.milestones.filter(ms => (ms.date || goal.date) !== date);
             if (goal.milestones.length === 0) goalsData.splice(goalIdx, 1);
+            saveGoals();
+            renderGoals();
+        }
+
+        function deleteEntireDay(date) {
+            pushGoalsUndoState();
+            goalsData.forEach(goal => {
+                goal.milestones = goal.milestones.filter(ms => (ms.date || goal.date) !== date);
+            });
+            goalsData = goalsData.filter(goal => goal.milestones.length > 0);
             saveGoals();
             renderGoals();
         }
