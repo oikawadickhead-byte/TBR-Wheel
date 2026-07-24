@@ -762,21 +762,21 @@
 <body>
 
     <div class="view-toggle" id="view-toggle">
-        <button type="button" id="view-btn-desktop" onclick="setViewMode('desktop')" title="Desktop view">ð¥ï¸</button>
-        <button type="button" id="view-btn-mobile" onclick="setViewMode('mobile')" title="Mobile view">ð±</button>
+        <button type="button" id="view-btn-desktop" onclick="setViewMode('desktop')" title="Desktop view">🖥️</button>
+        <button type="button" id="view-btn-mobile" onclick="setViewMode('mobile')" title="Mobile view">📱</button>
     </div>
 
     <h1>What to read/watch/play next?</h1>
 
    <div class="mode-toggle" id="list-mode-toggle">
-        <button type="button" class="active" id="list-mode-btn-new" onclick="switchListMode('new')">â¨ New Content</button>
-        <button type="button" id="list-mode-btn-reading" onclick="switchListMode('reading')">â³ Current Content</button>
+        <button type="button" class="active" id="list-mode-btn-new" onclick="switchListMode('new')">✨ New Content</button>
+        <button type="button" id="list-mode-btn-reading" onclick="switchListMode('reading')">⏳ Current Content</button>
     </div>
 
     <div class="mode-toggle" id="mode-toggle">
-        <button type="button" class="active" id="mode-btn-books" onclick="switchMode('books')">ð Books</button>
-        <button type="button" id="mode-btn-movies" onclick="switchMode('movies')">ð¬ Movies/Series</button>
-        <button type="button" id="mode-btn-games" onclick="switchMode('games')">ð® Video Games</button>
+        <button type="button" class="active" id="mode-btn-books" onclick="switchMode('books')">📚 Books</button>
+        <button type="button" id="mode-btn-movies" onclick="switchMode('movies')">🎬 Movies/Series</button>
+        <button type="button" id="mode-btn-games" onclick="switchMode('games')">🎮 Video Games</button>
     </div>
 
     <div class="action-bar" style="max-width: 1140px; width:100%;">
@@ -784,16 +784,16 @@
         <button class="secondary-btn" onclick="exportDataAsText()">Export Text</button>
         <button class="secondary-btn" onclick="document.getElementById('import-file').click()">Import Data</button>
         <input type="file" id="import-file" style="display:none" onchange="importData(event)">
-        <button id="undo-btn" class="secondary-btn" style="display: none;" onclick="triggerUndo()">â© Undo</button>
+        <button id="undo-btn" class="secondary-btn" style="display: none;" onclick="triggerUndo()">↩ Undo</button>
         <button id="goals-mode-btn" class="secondary-btn" onclick="toggleGoalsMode()">Goals Mode</button>
     </div>
 
     <!-- ============ GOALS MODE PANEL ============ -->
     <div id="goals-mode-panel">
         <div class="goals-top-bar">
-            <h2>ð¯ Reading Goals</h2>
+            <h2>🎯 Reading Goals</h2>
             <div class="goals-top-bar-actions">
-                <button class="goals-undo-btn" id="goals-undo-btn" onclick="undoGoalsAction()" disabled title="Undo the last add, edit, or remove">â© Undo</button>
+                <button class="goals-undo-btn" id="goals-undo-btn" onclick="undoGoalsAction()" disabled title="Undo the last add, edit, or remove">↩ Undo</button>
                 <button class="goals-add-btn" onclick="openGoalModal()">+ Add Goal</button>
             </div>
         </div>
@@ -823,9 +823,9 @@
             <div class="form-group">
                 <label>Goal Type</label>
                 <div class="goal-type-toggle">
-                    <button id="goal-type-pct-btn" class="active" onclick="setGoalType('percentage')">ð By Percentage</button>
-                    <button id="goal-type-ch-btn" onclick="setGoalType('chapter')">ð By Chapter</button>
-                    <button id="goal-type-pg-btn" onclick="setGoalType('page')">ð By Page</button>
+                    <button id="goal-type-pct-btn" class="active" onclick="setGoalType('percentage')">📊 By Percentage</button>
+                    <button id="goal-type-ch-btn" onclick="setGoalType('chapter')">📖 By Chapter</button>
+                    <button id="goal-type-pg-btn" onclick="setGoalType('page')">📄 By Page</button>
                 </div>
             </div>
 
@@ -973,7 +973,7 @@
                     <button type="button" onclick="setEnergyLevel('Tired')">Tired</button>
                     <button type="button" class="active" onclick="setEnergyLevel('Normal')">Normal</button>
                     <button type="button" id="energized-btn" onclick="setEnergyLevel('Energized')" ondblclick="unlockUltra(event)">Energized</button>
-                    <button type="button" id="ultra-btn" style="display:none; background: linear-gradient(135deg, #a259ff, #ff6b6b, #ffd700); color: white; text-shadow: 0 1px 3px rgba(0,0,0,0.4);" onclick="setEnergyLevel('Ultra')" ondblclick="lockUltra(event)">â¡ Ultra</button>
+                    <button type="button" id="ultra-btn" style="display:none; background: linear-gradient(135deg, #a259ff, #ff6b6b, #ffd700); color: white; text-shadow: 0 1px 3px rgba(0,0,0,0.4);" onclick="setEnergyLevel('Ultra')" ondblclick="lockUltra(event)">⚡ Ultra</button>
                     <select id="energy-level" style="display: none;">
                         <option value="Tired">Tired</option>
                         <option value="Normal" selected>Normal</option>
@@ -1080,9 +1080,9 @@
             <h2 id="modal-title">Book Title</h2>
             <div class="modal-vibe" id="modal-vibe"></div>
             <div class="modal-stats">
-                <div id="modal-pages-stat">ð <span id="modal-pages">0</span> pages</div>
-                <div id="modal-type-stat" style="display:none;"><span id="modal-type-emoji">ð</span> <span id="modal-type">Movie</span></div>
-                <div>â­ <span id="modal-rating">0.00</span></div>
+                <div id="modal-pages-stat">📚 <span id="modal-pages">0</span> pages</div>
+                <div id="modal-type-stat" style="display:none;"><span id="modal-type-emoji">📅</span> <span id="modal-type">Movie</span></div>
+                <div>⭐ <span id="modal-rating">0.00</span></div>
             </div>
             <div class="modal-buttons">
                 <button class="btn-accept" onclick="acceptBook()">Accept & Remove</button>
@@ -1418,7 +1418,7 @@
 
             // Normal palette (5 slices)
             const normalColors = ['#ffdac1', '#ffb7b2', '#c7ceea', '#bffcc6', '#fff9a6'];
-            // Ultra palette â repeating gradient-ish set for 20 slices
+            // Ultra palette — repeating gradient-ish set for 20 slices
             const ultraColors = [
                 '#a259ff','#b76aff','#ff6b6b','#ff8e53','#ffd700',
                 '#c3f584','#5efce8','#74b9ff','#fd79a8','#a29bfe',
@@ -1457,7 +1457,7 @@
             const buttons = document.querySelectorAll('#energy-level-toggle button[type="button"]');
             buttons.forEach(btn => {
                 btn.classList.remove('active');
-                if (btn.textContent.trim() === level || btn.textContent.trim() === 'â¡ Ultra' && level === 'Ultra') {
+                if (btn.textContent.trim() === level || btn.textContent.trim() === '⚡ Ultra' && level === 'Ultra') {
                     btn.classList.add('active');
                 }
             });
@@ -1567,14 +1567,14 @@
                 "Awesome job!",
                 "That's one more down!",
                 "Nicely done.",
-                "ððððððððâ",
+                "🐈🐈🐈🐈🐈🐈🐈🐈‍",
                 "Good effort :)",
                 "Another one crossed off the list!",
                 "Great progress!",
                 "Fantastic run!",
                 "Nailed it!",
                 "Superb session!",
-                "That's how it's done. ðª",
+                "That's how it's done. 💪",
                 "Solid progress, keep going. A"
             ];
             const msg = msgs[Math.floor(Math.random() * msgs.length)];
@@ -1721,7 +1721,7 @@
                         readingBooksList = Array.isArray(parsed.readingBooks) ? parsed.readingBooks : [];
                         readingMoviesList = Array.isArray(parsed.readingMovies) ? parsed.readingMovies : [];
                         playingGamesList = Array.isArray(parsed.playingGames) ? parsed.playingGames : [];
-                        // Older exports won't have a "goals" key â keep existing goals in that case
+                        // Older exports won't have a "goals" key — keep existing goals in that case
                         // rather than wiping them out on import.
                         if (Array.isArray(parsed.goals)) goalsData = parsed.goals;
                         saveAllToStorage();
@@ -2023,7 +2023,7 @@
                 const ratingLabel = document.getElementById('table-rating-label').innerText;
                 const tr = document.createElement('tr');
                 const genreMidCell = isGames && isReading ? `<td data-label="Genre">${item.genre || ''}</td>` : '';
-                const ratingCell = `<td data-label="${ratingLabel}" style="color: #7b856e; font-weight: bold;">â­ ${item.rating.toFixed(2)}</td>`;
+                const ratingCell = `<td data-label="${ratingLabel}" style="color: #7b856e; font-weight: bold;">⭐ ${item.rating.toFixed(2)}</td>`;
                 const actionCell = `<td class="action-cell-wrap"><div class="action-cell"><button class="edit-btn" onclick="startEdit(${globalIndex})">Edit</button><button class="delete-btn" onclick="directDelete(${globalIndex})">Remove</button></div></td>`;
 
                 if (!showExtraCol) {
@@ -2039,7 +2039,7 @@
                     let genreEndCell = '';
                     if (isReading) {
                         if (item.type === 'Movie') {
-                            extraCell = `â± ${item.timeStopped || 'â'}`;
+                            extraCell = `⏱ ${item.timeStopped || '—'}`;
                         } else {
                             extraCell = `<span class="vibe-tag">${item.animation}</span>`;
                         }
@@ -2136,32 +2136,32 @@
                 document.getElementById('modal-pages-stat').style.display = 'none';
                 document.getElementById('modal-type-stat').style.display = 'block';
                 if (item.type === 'Movie') {
-                    document.getElementById('modal-type-emoji').innerText = 'â±';
-                    document.getElementById('modal-type').innerText = `Stopped at ${item.timeStopped || 'â'}`;
+                    document.getElementById('modal-type-emoji').innerText = '⏱';
+                    document.getElementById('modal-type').innerText = `Stopped at ${item.timeStopped || '—'}`;
                 } else {
-                    document.getElementById('modal-type-emoji').innerText = 'ðï¸';
+                    document.getElementById('modal-type-emoji').innerText = '🎞️';
                     document.getElementById('modal-type').innerText = item.animation;
                 }
             } else {
                 if (isBooks) {
                     document.getElementById('modal-pages-stat').style.display = 'block';
                     document.getElementById('modal-type-stat').style.display = 'none';
-                    document.getElementById('modal-pages-stat').innerHTML = `ð <span id="modal-pages">${item.pages}</span> pages`;
+                    document.getElementById('modal-pages-stat').innerHTML = `📚 <span id="modal-pages">${item.pages}</span> pages`;
                 } else if (isMovies) {
                     document.getElementById('modal-pages-stat').style.display = 'none';
                     document.getElementById('modal-type-stat').style.display = 'block';
                     if (item.type === 'Movie') {
-                        document.getElementById('modal-type-emoji').innerText = 'ð';
+                        document.getElementById('modal-type-emoji').innerText = '📅';
                         document.getElementById('modal-type').innerText = item.year;
                     } else {
-                        document.getElementById('modal-type-emoji').innerText = 'ðï¸';
+                        document.getElementById('modal-type-emoji').innerText = '🎞️';
                         document.getElementById('modal-type').innerText = item.animation;
                     }
                 } else if (isGames) {
                     document.getElementById('modal-pages-stat').style.display = 'block';
                     document.getElementById('modal-type-stat').style.display = 'block';
-                    document.getElementById('modal-pages-stat').innerHTML = `ð® <span>${item.length}</span> hrs`;
-                    document.getElementById('modal-type-stat').innerHTML = `ð·ï¸ <span>${item.genre}</span>`;
+                    document.getElementById('modal-pages-stat').innerHTML = `🎮 <span>${item.length}</span> hrs`;
+                    document.getElementById('modal-type-stat').innerHTML = `🏷️ <span>${item.genre}</span>`;
                 }
             }
 
@@ -2658,7 +2658,7 @@
             if (allBooks.length === 0) {
                 const opt = document.createElement('option');
                 opt.value = '';
-                opt.textContent = 'â No books found â';
+                opt.textContent = '— No books found —';
                 sel.appendChild(opt);
             } else {
                 allBooks.forEach(b => {
@@ -2729,7 +2729,7 @@
         function buildPctMilestones(from, to) {
             const milestones = [];
             let start = from + 1;
-            // Every 5% step, snapped down to the last full-5 boundary â¤ to
+            // Every 5% step, snapped down to the last full-5 boundary ≤ to
             const lastFull = Math.floor(to / 5) * 5;
             for (let end = Math.min(from + 5, lastFull); end >= start && end <= lastFull && start <= to; end += 5) {
                 milestones.push({ label: `Percentage ${start}-${end}%`, completed: false });
@@ -2745,7 +2745,7 @@
         function buildPageMilestones(from, to, jump) {
             const milestones = [];
             let start = from + 1;
-            // Every `jump`-page step, snapped down to the last full boundary â¤ to
+            // Every `jump`-page step, snapped down to the last full boundary ≤ to
             const lastFull = Math.floor(to / jump) * jump;
             for (let end = Math.min(from + jump, lastFull); end >= start && end <= lastFull && start <= to; end += jump) {
                 milestones.push({ label: `Page ${start}-${end}`, completed: false });
@@ -2821,7 +2821,7 @@
                 if (to <= from) return alert('"To" must be greater than "From".');
                 if (from < 0 || to > 100) return alert('Percentages must be between 0 and 100.');
                 milestones = buildPctMilestones(from, to);
-                if (milestones.length === 0) return alert('Range too small â need at least 1% difference.');
+                if (milestones.length === 0) return alert('Range too small — need at least 1% difference.');
             } else if (goalType === 'page') {
                 const pgFrom = parseInt(document.getElementById('goal-pg-from').value);
                 const pgTo = parseInt(document.getElementById('goal-pg-to').value);
@@ -2829,12 +2829,12 @@
                 if (pgTo <= pgFrom) return alert('"To" page must be greater than "From" page.');
                 if (pgFrom < 0) return alert('"From" page must be 0 or greater.');
                 milestones = buildPageMilestones(pgFrom, pgTo, pageJump);
-                if (milestones.length === 0) return alert('Range too small â need at least ' + pageJump + ' pages difference.');
+                if (milestones.length === 0) return alert('Range too small — need at least ' + pageJump + ' pages difference.');
             } else {
                 if (chapterMode === 'numeric') {
                     const chFrom = parseInt(document.getElementById('goal-ch-from').value);
                     const chTo = parseInt(document.getElementById('goal-ch-to').value);
-                    if (isNaN(chFrom) || isNaN(chTo) || chFrom < 1 || chTo < chFrom) return alert('Please enter a valid chapter range (From â¤ To, both â¥ 1).');
+                    if (isNaN(chFrom) || isNaN(chTo) || chFrom < 1 || chTo < chFrom) return alert('Please enter a valid chapter range (From ≤ To, both ≥ 1).');
                     for (let ch = chFrom; ch <= chTo; ch++) {
                         milestones.push({ label: 'Chapter ' + ch, completed: false });
                     }
@@ -2991,7 +2991,7 @@
             if (goalsData.length === 0) {
                 container.innerHTML = `
                     <div class="goals-empty-state">
-                        <div class="empty-icon">ð¯</div>
+                        <div class="empty-icon">🎯</div>
                         <p>No reading goals yet.</p>
                         <p style="font-size:0.9em; opacity:0.8;">Click <strong>+ Add Goal</strong> to set your first milestone!</p>
                     </div>`;
@@ -3037,7 +3037,7 @@
                 group.innerHTML = `
                     <div class="goals-date-header">
                         <div class="goals-date-title">
-                            ${isPast && !isToday ? 'â°' : isToday ? 'ð' : 'ð'}
+                            ${isPast && !isToday ? '⏰' : isToday ? '📅' : '📆'}
                             <span class="date-badge">${dateLabel}</span>
                         </div>
                         <div style="display:flex; align-items:center; gap:10px;">
@@ -3059,7 +3059,7 @@
                     goalHeader.style.cssText = 'display:flex; align-items:center; justify-content:space-between; padding:6px 14px 4px; margin-top:8px;';
                     goalHeader.innerHTML = `
                         <span style="font-size:12px; font-weight:bold; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">
-                            ${goal.type === 'percentage' ? 'ð' : goal.type === 'page' ? 'ð' : 'ð'} ${escapeHtml(goal.bookTitle)}
+                            ${goal.type === 'percentage' ? '📊' : goal.type === 'page' ? '📄' : '📖'} ${escapeHtml(goal.bookTitle)}
                         </span>
                         <span style="display:flex; gap:6px;">
                             <button onclick="openEditGoalModal(${goal.id})" style="background:var(--edit-color);color:#3b4052;padding:4px 10px;font-size:11px;margin:0;border-radius:5px;border:none;cursor:pointer;box-shadow:none;">Edit</button>
@@ -3075,7 +3075,7 @@
                             <input type="checkbox" class="goal-checkbox" ${ms.completed ? 'checked' : ''}
                                 onchange="toggleMilestone(${goal.id}, ${msIdx}, this.checked)">
                             <div class="goal-text" style="flex:1; min-width:0;">${escapeHtml(ms.label)}</div>
-                            <button class="goal-delete-btn" title="Remove milestone" onclick="deleteMilestone(${goal.id}, ${msIdx})">â</button>
+                            <button class="goal-delete-btn" title="Remove milestone" onclick="deleteMilestone(${goal.id}, ${msIdx})">✕</button>
                         `;
                         listEl.appendChild(item);
                     });
@@ -3098,10 +3098,10 @@
         }
 
         function showGoalToast(bookTitle, label) {
-            const msgs = ['ð Goal reached!', 'â Milestone hit!', 'ð Keep going!', 'ð Great progress!', 'ð¯ Target achieved!', 'ðª Nailed it!'];
+            const msgs = ['🎉 Goal reached!', '✅ Milestone hit!', '📚 Keep going!', '🌟 Great progress!', '🎯 Target achieved!', '💪 Nailed it!'];
             const msg = msgs[Math.floor(Math.random() * msgs.length)];
             const toast = document.createElement('div');
-            toast.innerHTML = `<div style="font-size:20px;">${msg}</div><div style="font-size:14px;margin-top:6px;opacity:0.8;">${escapeHtml(bookTitle)} â ${escapeHtml(label)}</div>`;
+            toast.innerHTML = `<div style="font-size:20px;">${msg}</div><div style="font-size:14px;margin-top:6px;opacity:0.8;">${escapeHtml(bookTitle)} — ${escapeHtml(label)}</div>`;
             toast.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--primary-color);color:#444e37;padding:28px 40px;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,0.3);font-weight:bold;z-index:10000;opacity:0;transition:opacity 0.3s ease;text-align:center;border:3px solid var(--accent-yellow);min-width:200px;';
             document.body.appendChild(toast);
             setTimeout(() => toast.style.opacity = '1', 10);
