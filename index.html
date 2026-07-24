@@ -339,6 +339,12 @@
     .edit-modal-content .form-group-vibe { margin-top: 10px; }
     .edit-modal-buttons { display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px; }
     .edit-modal-buttons button { margin: 0; padding: 10px 20px; font-size: 14px; }
+    .edit-modal-buttons .btn-complete {
+        background-color: #dff0c8;
+        color: #4a5e2a;
+        margin-right: auto;
+    }
+    .edit-modal-buttons .btn-complete:hover { opacity: 0.85; transform: scale(1.02); }
 
     .btn-save { background-color: var(--primary-color); color: #444e37; }
     .btn-cancel { background-color: #eae5db; color: var(--text-color); }
@@ -469,6 +475,29 @@
         margin: 0;
         font-size: 1.6em;
     }
+
+    .goals-top-bar-title-group {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .yearly-goal-inline-text {
+        color: #ffffff;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        font-size: calc(1.6em - 5px);
+        opacity: 0.85;
+        cursor: pointer;
+        text-decoration: underline;
+        text-decoration-style: dotted;
+        text-underline-offset: 3px;
+        background: transparent;
+        border: none;
+        padding: 0;
+    }
+
+    .yearly-goal-inline-text:hover { opacity: 1; }
 
     .goals-add-btn {
         background-color: var(--primary-color);
@@ -754,6 +783,160 @@
     body.view-mobile .goals-date-group { padding: 16px; }
     body.view-mobile .goal-item { flex-wrap: wrap; gap: 8px; }
     body.view-mobile .goals-modal-content { padding: 22px 16px; }
+
+    /* Yearly Goal Card */
+    .yearly-goal-card {
+        background-color: var(--surface-color);
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        border: 1px solid var(--border-color);
+        padding: 20px 24px;
+        width: 100%;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .yearly-goal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .yearly-goal-title {
+        font-size: 1.05em;
+        font-weight: bold;
+        color: #444e37;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .yearly-goal-edit-btn {
+        background: var(--edit-color);
+        color: #3b4052;
+        border: none;
+        padding: 6px 14px;
+        font-size: 12px;
+        font-weight: bold;
+        border-radius: 7px;
+        cursor: pointer;
+        margin: 0;
+        box-shadow: none;
+    }
+
+    .yearly-goal-edit-btn:hover { opacity: 0.85; transform: scale(1.02); }
+
+    .yearly-goal-progress-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+
+    .yearly-goal-progress-bar-wrap {
+        flex: 1;
+        min-width: 140px;
+        height: 12px;
+        background: #eae5db;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .yearly-goal-progress-bar-fill {
+        height: 100%;
+        background: var(--primary-color);
+        border-radius: 20px;
+        transition: width 0.3s ease;
+    }
+
+    .yearly-goal-progress-text {
+        font-size: 13px;
+        font-weight: bold;
+        color: var(--text-color);
+        white-space: nowrap;
+    }
+
+    .yearly-goal-stats-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        font-size: 13px;
+        color: var(--text-muted);
+    }
+
+    .yearly-goal-pace-badge {
+        padding: 3px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: bold;
+        white-space: nowrap;
+    }
+
+    .yearly-goal-pace-ahead { background: #dff0c8; color: #4a5e2a; }
+    .yearly-goal-pace-ontrack { background: var(--edit-color); color: #3b4052; }
+    .yearly-goal-pace-behind { background: var(--danger-color); color: #5e3a3a; }
+
+    .yearly-goal-empty {
+        font-size: 13px;
+        color: var(--text-muted);
+    }
+
+    .yearly-goal-header-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .yearly-goal-menu-close {
+        position: absolute;
+        top: 14px;
+        right: 16px;
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        margin: 0;
+        padding: 4px;
+        font-size: 18px;
+        line-height: 1;
+        cursor: pointer;
+        color: var(--text-muted);
+    }
+
+    .yearly-goal-menu-close:hover { opacity: 0.7; transform: none; }
+
+    .yearly-goal-menu-content {
+        position: relative;
+    }
+
+    .yearly-goal-add-btn {
+        background: var(--primary-color);
+        color: #444e37;
+        border: none;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        font-size: 14px;
+        font-weight: bold;
+        line-height: 1;
+        cursor: pointer;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .yearly-goal-add-btn:hover { opacity: 0.85; transform: scale(1.08); }
+
+    body.view-mobile .yearly-goal-card { padding: 16px; }
+    body.view-mobile .yearly-goal-header { justify-content: center; text-align: center; }
+    body.view-mobile .yearly-goal-stats-row { justify-content: center; text-align: center; }
     body.view-mobile .goals-modal-buttons { flex-direction: column; }
     body.view-mobile .goals-modal-buttons button { width: 100%; }
     /* ============ END GOALS MODE STYLES ============ */
@@ -791,13 +974,43 @@
     <!-- ============ GOALS MODE PANEL ============ -->
     <div id="goals-mode-panel">
         <div class="goals-top-bar">
-            <h2>🎯 Reading Goals</h2>
+            <div class="goals-top-bar-title-group">
+                <h2>🎯 Reading Goals</h2>
+                <span class="yearly-goal-inline-text" id="yearly-goal-inline-text" onclick="openYearlyGoalMenu()">Loading…</span>
+            </div>
             <div class="goals-top-bar-actions">
                 <button class="goals-undo-btn" id="goals-undo-btn" onclick="undoGoalsAction()" disabled title="Undo the last add, edit, or remove">↩ Undo</button>
                 <button class="goals-add-btn" onclick="openGoalModal()">+ Add Goal</button>
             </div>
         </div>
         <div id="goals-content" style="width:100%;"></div>
+    </div>
+
+    <!-- Yearly Goal Menu Popup -->
+    <div class="goals-modal-overlay" id="yearly-goal-menu-overlay" onclick="if(event.target===this) closeYearlyGoalMenu()">
+        <div class="goals-modal-content yearly-goal-menu-content" style="max-width:480px;">
+            <button class="yearly-goal-menu-close" onclick="closeYearlyGoalMenu()">✕</button>
+            <div id="yearly-goal-card-container" style="width:100%;"></div>
+        </div>
+    </div>
+
+    <!-- Yearly Goal Edit Modal -->
+    <div class="goals-modal-overlay" id="yearly-goal-modal-overlay">
+        <div class="goals-modal-content" style="max-width:400px;">
+            <h2 id="yearly-goal-modal-title">Edit Yearly Goal</h2>
+            <div class="form-group">
+                <label>Books I Want To Read This Year</label>
+                <input type="number" id="yearly-goal-target-input" min="0" step="1">
+            </div>
+            <div class="form-group">
+                <label>Books Read So Far This Year</label>
+                <input type="number" id="yearly-goal-count-input" min="0" step="1">
+            </div>
+            <div class="goals-modal-buttons">
+                <button class="btn-cancel" onclick="closeYearlyGoalModal()">Cancel</button>
+                <button class="btn-save" onclick="saveYearlyGoalModal()">Save</button>
+            </div>
+        </div>
     </div>
 
     <!-- Goals Add Modal -->
@@ -1141,6 +1354,7 @@
                 </div>
             </div>
             <div class="edit-modal-buttons">
+                <button class="btn-complete" id="edit-modal-complete-btn" style="display:none;" onclick="completeReadingBook()">✅ Mark as Complete</button>
                 <button class="btn-cancel" onclick="closeEditModal()">Cancel</button>
                 <button class="btn-save" onclick="saveEdit()">Save</button>
             </div>
@@ -1248,6 +1462,7 @@
         function init() {
             initViewMode();
             loadGoals();
+            loadYearlyGoal();
             const storedBooks = localStorage.getItem(storageKeys.new_books);
             if (storedBooks) tbrList = JSON.parse(storedBooks);
             const storedMovies = localStorage.getItem(storageKeys.new_movies);
@@ -1683,7 +1898,8 @@
                 readingBooks: readingBooksList,
                 readingMovies: readingMoviesList,
                 playingGames: playingGamesList,
-                goals: goalsData
+                goals: goalsData,
+                yearlyGoal: yearlyGoal
             };
             const blob = new Blob([JSON.stringify(combined, null, 2)], { type: "application/json" });
             const url = URL.createObjectURL(blob);
@@ -1704,6 +1920,7 @@
             localStorage.setItem(storageKeys.reading_movies, JSON.stringify(readingMoviesList));
             localStorage.setItem(storageKeys.reading_games, JSON.stringify(playingGamesList));
             localStorage.setItem(GOALS_STORAGE_KEY, JSON.stringify(goalsData));
+            localStorage.setItem(YEARLY_GOAL_STORAGE_KEY, JSON.stringify(yearlyGoal));
         }
 
         function importData(event) {
@@ -1713,7 +1930,7 @@
             reader.onload = function(e) {
                 try {
                     const parsed = JSON.parse(e.target.result);
-                    const keys = ['books', 'movies', 'games', 'readingBooks', 'readingMovies', 'playingGames', 'goals'];
+                    const keys = ['books', 'movies', 'games', 'readingBooks', 'readingMovies', 'playingGames', 'goals', 'yearlyGoal'];
                     if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && keys.some(k => k in parsed)) {
                         tbrList = Array.isArray(parsed.books) ? parsed.books : [];
                         movieList = Array.isArray(parsed.movies) ? parsed.movies : [];
@@ -1724,8 +1941,11 @@
                         // Older exports won't have a "goals" key — keep existing goals in that case
                         // rather than wiping them out on import.
                         if (Array.isArray(parsed.goals)) goalsData = parsed.goals;
+                        // Same for "yearlyGoal" — only overwrite if the export actually included it.
+                        if ('yearlyGoal' in parsed) yearlyGoal = parsed.yearlyGoal;
                         saveAllToStorage();
                         renderGoals();
+                        if (goalsMode) renderYearlyGoalCard();
                     } else {
                         setActiveList(parsed);
                         saveToStorage();
@@ -2255,6 +2475,10 @@
             saveAllToStorage(); 
             updateFilters();
             document.getElementById('undo-btn').style.display = 'block';
+
+            if (targetKey === 'new_books' || targetKey === 'reading_books') {
+                incrementYearlyGoalTally();
+            }
         }
 
         function triggerUndo() {
@@ -2272,6 +2496,10 @@
                 saveAllToStorage(); 
                 updateFilters();
                 document.getElementById('undo-btn').style.display = 'none';
+
+                if (lastRemovedFromListKey === 'new_books' || lastRemovedFromListKey === 'reading_books') {
+                    decrementYearlyGoalTally();
+                }
             }
         }
         function startEdit(globalIndex) {
@@ -2349,7 +2577,20 @@
             document.getElementById('edit-vibe-group').style.display = (currentMode === 'games') ? 'none' : 'flex';
             editModalSelectedTags = getTags(item.vibe);
             buildEditModalTagPool();
+
+            document.getElementById('edit-modal-complete-btn').style.display =
+                (isReading && currentMode === 'books') ? 'inline-block' : 'none';
+
             document.getElementById('edit-modal-overlay').classList.add('active');
+        }
+
+        // Marks the currently-edited "Currently Reading" book as finished:
+        // removes it from the reading list and adds 1 to the yearly reading goal.
+        function completeReadingBook() {
+            const idx = editingItemIndex;
+            if (idx === -1) return;
+            closeEditModal();
+            executeRemoval(idx, 'reading_books');
         }
 
         function closeEditModal() { document.getElementById('edit-modal-overlay').classList.remove('active'); }
@@ -2538,6 +2779,11 @@
         // ============================================================
 
         const GOALS_STORAGE_KEY = 'reading_goals_data';
+        const YEARLY_GOAL_STORAGE_KEY = 'yearly_reading_goal_data';
+
+        // yearlyGoal shape: { target, year, count, weekKey, weekCount }
+        // No per-book log is kept — count is a running tally only.
+        let yearlyGoal = null;
         let goalsData = [];
         let goalsMode = false;
         let goalType = 'percentage';
@@ -2585,6 +2831,241 @@
             localStorage.setItem(GOALS_STORAGE_KEY, JSON.stringify(goalsData));
         }
 
+        // ============================================================
+        // YEARLY READING GOAL TRACKER
+        // ============================================================
+
+        function getWeekKey(date) {
+            // Not a true ISO week — just a stable per-week bucket key
+            // (year + 7-day block index since Jan 1) used to know when
+            // to roll the "this week" tally over.
+            const start = new Date(date.getFullYear(), 0, 1);
+            const dayOfYear = Math.floor((date - start) / 86400000);
+            const weekIndex = Math.floor(dayOfYear / 7);
+            return `${date.getFullYear()}-W${weekIndex}`;
+        }
+
+        function loadYearlyGoal() {
+            const saved = localStorage.getItem(YEARLY_GOAL_STORAGE_KEY);
+            if (saved) {
+                try { yearlyGoal = JSON.parse(saved); } catch(e) { yearlyGoal = null; }
+            }
+        }
+
+        function saveYearlyGoalData() {
+            localStorage.setItem(YEARLY_GOAL_STORAGE_KEY, JSON.stringify(yearlyGoal));
+        }
+
+        // Rolls the weekly tally over if we've crossed into a new week
+        // since it was last touched. Does not save by itself.
+        function rollWeekIfNeeded() {
+            if (!yearlyGoal) return;
+            const currentWeekKey = getWeekKey(new Date());
+            if (yearlyGoal.weekKey !== currentWeekKey) {
+                yearlyGoal.weekKey = currentWeekKey;
+                yearlyGoal.weekCount = 0;
+            }
+        }
+
+        // Call whenever a book is marked finished (removed from a books list).
+        function incrementYearlyGoalTally() {
+            if (!yearlyGoal) return;
+            const currentYear = new Date().getFullYear();
+            if (yearlyGoal.year !== currentYear) return; // stale goal, needs new-year prompt first
+            rollWeekIfNeeded();
+            yearlyGoal.count = (yearlyGoal.count || 0) + 1;
+            yearlyGoal.weekCount = (yearlyGoal.weekCount || 0) + 1;
+            saveYearlyGoalData();
+            if (goalsMode) renderYearlyGoalCard();
+        }
+
+        // Call if a book removal gets undone, to keep the tally accurate.
+        function decrementYearlyGoalTally() {
+            if (!yearlyGoal) return;
+            const currentYear = new Date().getFullYear();
+            if (yearlyGoal.year !== currentYear) return;
+            rollWeekIfNeeded();
+            yearlyGoal.count = Math.max((yearlyGoal.count || 0) - 1, 0);
+            yearlyGoal.weekCount = Math.max((yearlyGoal.weekCount || 0) - 1, 0);
+            saveYearlyGoalData();
+            if (goalsMode) renderYearlyGoalCard();
+        }
+
+        function computeYearlyGoalStats() {
+            const now = new Date();
+            const year = yearlyGoal.year;
+            const target = yearlyGoal.target || 0;
+            const count = yearlyGoal.count || 0;
+
+            const startOfYear = new Date(year, 0, 1);
+            const endOfYear = new Date(year, 11, 31, 23, 59, 59, 999);
+            const totalDaysInYear = Math.round((endOfYear - startOfYear) / 86400000) + 1;
+
+            const daysElapsed = Math.min(Math.max(Math.floor((now - startOfYear) / 86400000) + 1, 1), totalDaysInYear);
+            const daysRemaining = Math.max(totalDaysInYear - daysElapsed + 1, 0);
+            const weeksRemaining = Math.max(daysRemaining / 7, daysRemaining > 0 ? daysRemaining / 7 : 0);
+
+            const booksRemaining = Math.max(target - count, 0);
+            const fractionElapsed = daysElapsed / totalDaysInYear;
+            const expectedByNow = target * fractionElapsed;
+            const paceDiff = count - expectedByNow;
+
+            let thisWeekTarget;
+            if (daysRemaining <= 0) {
+                thisWeekTarget = booksRemaining;
+            } else if (weeksRemaining < 1) {
+                thisWeekTarget = booksRemaining; // final stretch — show what's left outright
+            } else {
+                thisWeekTarget = booksRemaining / weeksRemaining;
+            }
+
+            let paceLabel, paceClass;
+            if (paceDiff >= 0.5) {
+                paceLabel = `${Math.round(paceDiff)} ahead`;
+                paceClass = 'yearly-goal-pace-ahead';
+            } else if (paceDiff <= -0.5) {
+                paceLabel = `${Math.round(Math.abs(paceDiff))} behind`;
+                paceClass = 'yearly-goal-pace-behind';
+            } else {
+                paceLabel = 'on track';
+                paceClass = 'yearly-goal-pace-ontrack';
+            }
+
+            return {
+                target, count, booksRemaining,
+                pct: target > 0 ? Math.min(Math.round((count / target) * 100), 100) : 0,
+                thisWeekTarget, paceLabel, paceClass,
+                weekCount: yearlyGoal.weekCount || 0
+            };
+        }
+
+        function openYearlyGoalMenu() {
+            renderYearlyGoalCard();
+            document.getElementById('yearly-goal-menu-overlay').classList.add('active');
+        }
+
+        function closeYearlyGoalMenu() {
+            document.getElementById('yearly-goal-menu-overlay').classList.remove('active');
+        }
+
+        function updateYearlyGoalInlineText() {
+            const el = document.getElementById('yearly-goal-inline-text');
+            if (!el) return;
+            const currentYear = new Date().getFullYear();
+            if (!yearlyGoal || yearlyGoal.year !== currentYear) {
+                el.textContent = '📚 No goal set — tap to set one';
+                return;
+            }
+            const s = computeYearlyGoalStats();
+            el.textContent = `📚 ${s.count}/${s.target} books this year`;
+        }
+
+        function addBookToYearlyGoal(event) {
+            if (event) event.stopPropagation();
+            incrementYearlyGoalTally();
+        }
+
+        function renderYearlyGoalCard() {
+            const container = document.getElementById('yearly-goal-card-container');
+            updateYearlyGoalInlineText();
+            if (!container) return;
+
+            const currentYear = new Date().getFullYear();
+
+            if (!yearlyGoal || yearlyGoal.year !== currentYear) {
+                container.innerHTML = `
+                    <div class="yearly-goal-card">
+                        <div class="yearly-goal-header">
+                            <div class="yearly-goal-header-left">
+                                <div class="yearly-goal-title">📚 Yearly Reading Goal</div>
+                            </div>
+                            <button class="yearly-goal-edit-btn" onclick="openYearlyGoalModal()">Set Goal</button>
+                        </div>
+                        <div class="yearly-goal-body">
+                            <div class="yearly-goal-empty">No goal set for ${currentYear} yet. Click "Set Goal" to start tracking.</div>
+                        </div>
+                    </div>`;
+                return;
+            }
+
+            rollWeekIfNeeded();
+            saveYearlyGoalData();
+            const s = computeYearlyGoalStats();
+
+            const weekTargetText = s.thisWeekTarget <= 0
+                ? "🎉 Goal reached — no more needed this week!"
+                : `~${s.thisWeekTarget < 1 ? s.thisWeekTarget.toFixed(1) : Math.round(s.thisWeekTarget)} book${s.thisWeekTarget >= 1.5 || s.thisWeekTarget < 1 ? 's' : ''} to read this week`;
+
+            container.innerHTML = `
+                <div class="yearly-goal-card">
+                    <div class="yearly-goal-header">
+                        <div class="yearly-goal-header-left">
+                            <div class="yearly-goal-title">📚 Yearly Reading Goal — ${currentYear}</div>
+                        </div>
+                        <button class="yearly-goal-edit-btn" onclick="openYearlyGoalModal()">Edit Goal</button>
+                    </div>
+                    <div class="yearly-goal-body">
+                        <div class="yearly-goal-progress-row">
+                            <div class="yearly-goal-progress-bar-wrap"><div class="yearly-goal-progress-bar-fill" style="width:${s.pct}%"></div></div>
+                            <div class="yearly-goal-progress-text">${s.count} / ${s.target} books</div>
+                        </div>
+                        <div class="yearly-goal-stats-row">
+                            <span>${weekTargetText}</span>
+                            <span>•</span>
+                            <span>${s.weekCount} finished this week</span>
+                            <span class="yearly-goal-pace-badge ${s.paceClass}">${s.paceLabel}</span>
+                            <button class="yearly-goal-add-btn" onclick="addBookToYearlyGoal(event)" title="Add a book as read">+</button>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        function checkYearlyGoalNewYear() {
+            const currentYear = new Date().getFullYear();
+            if (yearlyGoal && yearlyGoal.year !== currentYear) {
+                openYearlyGoalModal();
+            }
+        }
+
+        function openYearlyGoalModal() {
+            const currentYear = new Date().getFullYear();
+            if (!yearlyGoal || yearlyGoal.year !== currentYear) {
+                document.getElementById('yearly-goal-modal-title').textContent = `Set ${currentYear} Reading Goal`;
+                document.getElementById('yearly-goal-target-input').value = yearlyGoal ? yearlyGoal.target : '';
+                document.getElementById('yearly-goal-count-input').value = 0;
+            } else {
+                document.getElementById('yearly-goal-modal-title').textContent = 'Edit Yearly Goal';
+                document.getElementById('yearly-goal-target-input').value = yearlyGoal.target;
+                document.getElementById('yearly-goal-count-input').value = yearlyGoal.count;
+            }
+            document.getElementById('yearly-goal-modal-overlay').classList.add('active');
+        }
+
+        function closeYearlyGoalModal() {
+            document.getElementById('yearly-goal-modal-overlay').classList.remove('active');
+        }
+
+        function saveYearlyGoalModal() {
+            const currentYear = new Date().getFullYear();
+            const target = Math.max(parseInt(document.getElementById('yearly-goal-target-input').value, 10) || 0, 0);
+            const count = Math.max(parseInt(document.getElementById('yearly-goal-count-input').value, 10) || 0, 0);
+
+            yearlyGoal = {
+                target,
+                year: currentYear,
+                count,
+                weekKey: getWeekKey(new Date()),
+                weekCount: (yearlyGoal && yearlyGoal.year === currentYear) ? (yearlyGoal.weekCount || 0) : 0
+            };
+            saveYearlyGoalData();
+            closeYearlyGoalModal();
+            renderYearlyGoalCard();
+        }
+
+        // ============================================================
+        // END YEARLY READING GOAL TRACKER
+        // ============================================================
+
         // ---- Undo (add / edit / remove goal) ----
 
         // Call this right before any add/edit/remove mutation to snapshot
@@ -2631,6 +3112,8 @@
                 modeToggle.style.display = 'none';
                 applyRandomGoalsBackground();
                 renderGoals();
+                renderYearlyGoalCard();
+                checkYearlyGoalNewYear();
             } else {
                 btn.textContent = 'Goals Mode';
                 btn.style.backgroundColor = '';
